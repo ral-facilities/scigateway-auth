@@ -7,7 +7,7 @@ class Config(object):
 
     def __init__(self):
         with open(Path("config.json")) as target:
-            self.config = json.load()
+            self.config = json.load(target)
         target.close()
 
     def get_host(self):
