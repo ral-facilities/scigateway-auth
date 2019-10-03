@@ -25,6 +25,15 @@ class UOWSICATAuthenticator(ICATAuthenticator):
 
 
 class AnonICATAuthenticator(ICATAuthenticator):
-    pass
+
+def get_authenticator(mnemonic):
+    if mnemonic == "simple":
+        return SimpleICATAuthenticator()
+    if mnemonic == "uows":
+        return UOWSICATAuthenticator()
+    if mnemonic == "anon":
+        return AnonICATAuthenticator()
+    if mnemonic == "ldap":
+        return LDAPICATAuthenticator()
 
 
