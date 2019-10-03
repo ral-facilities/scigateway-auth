@@ -25,6 +25,9 @@ class UOWSICATAuthenticator(ICATAuthenticator):
 
 
 class AnonICATAuthenticator(ICATAuthenticator):
+    def authenticate(self, credentials):
+        return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
+                             data={"json": "{\"plugin\": \"anon\"}"}).json()
 
 def get_authenticator(mnemonic):
     if mnemonic == "simple":
