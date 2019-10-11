@@ -1,43 +1,13 @@
-from abc import ABC, abstractmethod
-
 import requests
 
 
-class ICATAuthenticator(ABC):
-    @abstractmethod
-    def authenticate(self, credentials):
-        pass
-
-
-class SimpleICATAuthenticator(ICATAuthenticator):
-    def authenticate(self, credentials):
-        pass
-
-
-class LDAPICATAuthenticator(ICATAuthenticator):
-    def authenticate(self, credentials):
-        pass
-
-
-class UOWSICATAuthenticator(ICATAuthenticator):
-    def authenticate(self, credentials):
-        pass
-
-
-class AnonICATAuthenticator(ICATAuthenticator):
-    def authenticate(self, credentials):
+class ICATAuthenticator(object):
+    def authenticate(self, mnemonic, credentials=None):
+        if credentials is None:
+            return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
+                                 data={"json": f'{{"plugin": "{mnemonic}"}}'}).json()
         return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
-                             data={"json": "{\"plugin\": \"anon\"}"}).json()
-
-def get_authenticator(mnemonic):
-    if mnemonic == "simple":
-        return SimpleICATAuthenticator()
-    if mnemonic == "uows":
-        return UOWSICATAuthenticator()
-    if mnemonic == "anon":
-        return AnonICATAuthenticator()
-    if mnemonic == "ldap":
-        return LDAPICATAuthenticator()
+                             data={"json": f'{{"plugin": {mnemonic},"credentials":{credentials}}}'})
 
 
 class AuthenticationHandler(object):
@@ -46,8 +16,8 @@ class AuthenticationHandler(object):
         self.credentials = credentials if credentials is not None else None
 
     def _get_payload(self):
-        authenticator = get_authenticator(self.mnemonic)
-        return authenticator.authenticate(self.credentials)
+        authenticator = ICATAuthenticator()
+        return authenticator.authenticate(self.mnemonic, credentials=self.credentials)
 
     def _pack_JWT(self, dictionary):
         # TODO
@@ -55,4 +25,3 @@ class AuthenticationHandler(object):
 
     def get_jwt(self):
         return self._pack_JWT(self._get_payload())
-
