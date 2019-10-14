@@ -14,6 +14,7 @@ idna==2.8                 # via requests
 itsdangerous==1.1.0       # via flask
 jinja2==2.10.1            # via flask
 markupsafe==1.1.1         # via jinja2
+pyjwt==1.7.1
 pytz==2019.2              # via flask-restful
 requests==2.22.0
 six==1.12.0               # via flask-restful
