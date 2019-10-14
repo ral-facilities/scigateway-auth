@@ -1,3 +1,4 @@
+import jwt
 import requests
 
 
@@ -11,6 +12,8 @@ class ICATAuthenticator(object):
 
 
 class AuthenticationHandler(object):
+    SECRET = "shh"
+
     def __init__(self, mnemonic, credentials=None):
         self.mnemonic = mnemonic
         self.credentials = credentials if credentials is not None else None
@@ -19,9 +22,9 @@ class AuthenticationHandler(object):
         authenticator = ICATAuthenticator()
         return authenticator.authenticate(self.mnemonic, credentials=self.credentials)
 
-    def _pack_JWT(self, dictionary):
-        # TODO
-        return dictionary
+    def _pack_jwt(self, dictionary):
+        token = jwt.encode(dictionary, self.SECRET, algorithm="HS256")
+        return token.decode("utf-8")
 
     def get_jwt(self):
-        return self._pack_JWT(self._get_payload())
+        return self._pack_jwt(self._get_payload())
