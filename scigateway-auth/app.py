@@ -1,8 +1,8 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api, Resource
 
 from common.config import config
-from src.auth import AuthenticationHandler
+from src.auth import AuthenticationHandler, verify_token
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -16,7 +16,8 @@ class LoginResource(Resource):
 
 
 class VerifyResource(Resource):
-    pass
+    def post(self):
+        return verify_token(request.json["token"])
 
 
 api.add_resource(LoginResource, "/login")
