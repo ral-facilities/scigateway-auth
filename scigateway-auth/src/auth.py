@@ -14,11 +14,19 @@ class ICATAuthenticator(object):
 
 
 class AuthenticationHandler(object):
+    """
+    An AuthenticationHandler can be used to verify JWTs, insert sessions into JWTs and create ICATAuthenticators to
+    get ICAT session IDs
+    """
+    def __init__(self):
+        self.mnemonic = None
+        self.credentials = None
 
-
-    def __init__(self, mnemonic, credentials=None):
+    def set_mnemonic(self, mnemonic):
         self.mnemonic = mnemonic
-        self.credentials = credentials if credentials is not None else None
+
+    def set_credentials(self, credentials):
+        self.credentials = credentials
 
     def _get_payload(self):
         authenticator = ICATAuthenticator()
