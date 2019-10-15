@@ -62,11 +62,11 @@ class AuthenticationHandler(object):
         :param token: The JWT to be checked
         :return: - tuple with message and status code e.g. ("", 200)
         """
-    try:
-        jwt.decode(token, SECRET, algorithms=["HS256"])
-        return "", 200
-    except:
-        return "Unauthorized", 403
+        try:
+            jwt.decode(token, SECRET, algorithms=["HS256"])
+            return "", 200
+        except:
+            return "Unauthorized", 403
 
 
 def requires_mnemonic(method):
