@@ -17,7 +17,7 @@ def mock_post_requests(*args, **kwargs):
 
 class TestAuthenticationHandler(TestCase):
     def setUp(self):
-        self.handler = AuthenticationHandler("test")
+        self.handler = AuthenticationHandler()
 
     def test__pack_jwt(self):
         token = self.handler._pack_jwt({"test": "test"})
@@ -29,3 +29,5 @@ class TestAuthenticationHandler(TestCase):
         token = self.handler.get_jwt()
         expected_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoidGVzdCJ9.8WxX7mlf1rrIcHqUyDXQMz5hsrsE-w3957U6Sqf06vc"
         self.assertEqual(token, expected_token)
+
+
