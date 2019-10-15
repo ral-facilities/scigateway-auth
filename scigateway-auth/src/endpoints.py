@@ -20,6 +20,19 @@ class LoginEndpoint(Endpoint):
     the post body.
     """
     def get_credentials_from_post_body(self):
+        """
+        Gets the mnemonic and the credentials from the post body and set them for AuthenticationHandler
+        """
+        data = request.json
+        try:
+            self.auth_handler.set_mnemonic(data["mnemonic"])
+        except KeyError:
+            raise MissingMnemonicError("No mnemonic")
+        try:
+            self.auth_handler.set_credentials(data["credentials"])
+        except KeyError:
+            pass
+
     def post(self):
         """
         The post method for the /login endpoint. Uses the ICATAuthenticator to obtain a session_id and returns a JWT
