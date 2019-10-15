@@ -45,3 +45,20 @@ def verify_token(token):
         return "", 200
     except:
         return "Unauthorized", 403
+
+
+def requires_mnemonic(method):
+    """
+    Decorator for the /login post method to handle the case where a mnemonic is not provided
+    """
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        try:
+            return method(*args, **kwargs)
+        except MissingMnemonicError:
+            return "Missing mnemonic", 400
+        except Exception as e:
+            print(e)
+            return "Something went wrong", 500
+
+    return wrapper

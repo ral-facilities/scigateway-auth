@@ -33,6 +33,7 @@ class LoginEndpoint(Endpoint):
         except KeyError:
             pass
 
+    @requires_mnemonic
     def post(self):
         """
         The post method for the /login endpoint. Uses the ICATAuthenticator to obtain a session_id and returns a JWT
