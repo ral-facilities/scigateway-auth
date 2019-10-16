@@ -3,17 +3,17 @@ from functools import wraps
 import jwt
 import requests
 
-from common.constants import SECRET
+from common.constants import SECRET, ICAT_AUTH_URL
 from common.exceptions import MissingMnemonicError
 
 
 class ICATAuthenticator(object):
     def authenticate(self, mnemonic, credentials=None):
         if credentials is None:
-            return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
+            return requests.post(ICAT_AUTH_URL,
                                  data={"json": f'{{"plugin": "{mnemonic}"}}'}).json()
 
-        return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
+        return requests.post(ICAT_AUTH_URL,
                              data={"json": f'{{"plugin": {mnemonic},"credentials":{credentials}}}'})
 
 
