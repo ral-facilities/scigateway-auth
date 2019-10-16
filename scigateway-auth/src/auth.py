@@ -6,7 +6,7 @@ import jwt
 import requests
 
 from common.constants import SECRET
-from common.exceptions import MissingMnemonicError, BadMnemonicError
+from common.exceptions import MissingMnemonicError, BadMnemonicError, AuthenticationError
 
 
 class ICATAuthenticator(object):
@@ -111,6 +111,8 @@ def requires_mnemonic(method):
             return "Missing mnemonic", 400
         except BadMnemonicError:
             return "Bad mnemonic given", 400
+        except AuthenticationError:
+            return "Bad credentials", 403
         except Exception as e:
             traceback.print_exc()
             return "Something went wrong", 500
