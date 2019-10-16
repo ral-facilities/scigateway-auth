@@ -4,17 +4,15 @@ import jwt
 import requests
 
 from common.constants import SECRET
-from common.exceptions import MissingMnemonicError
+from common.exceptions import MissingMnemonicError, BadMnemonicError
 
 
 class ICATAuthenticator(object):
     def authenticate(self, mnemonic, credentials=None):
-        if credentials is None:
-            return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
-                                 data={"json": f'{{"plugin": "{mnemonic}"}}'}).json()
+    def _check_mnemonic(self, mnemonic):
+        if mnemonic != "anon" and mnemonic != "ldap" and mnemonic != "ldap":
+            raise BadMnemonicError(f"Bad mnemonic given: {mnemonic}")
 
-        return requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session",
-                             data={"json": f'{{"plugin": {mnemonic},"credentials":{credentials}}}'})
 
 
 class AuthenticationHandler(object):
