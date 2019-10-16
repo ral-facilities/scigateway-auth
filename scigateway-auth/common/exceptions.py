@@ -7,3 +7,6 @@ class MissingMnemonicError(APIError):
 
 class BadMnemonicError(APIError):
     pass
+
+class AuthenticationError(APIError):
+    pass
