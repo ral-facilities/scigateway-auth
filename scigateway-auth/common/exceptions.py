@@ -5,3 +5,5 @@ class APIError(Exception):
 class MissingMnemonicError(APIError):
     pass
 
+class BadMnemonicError(APIError):
+    pass
