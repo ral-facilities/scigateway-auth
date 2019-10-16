@@ -27,6 +27,20 @@ class ICATAuthenticator(object):
         if mnemonic != "anon" and mnemonic != "ldap" and mnemonic != "ldap":
             raise BadMnemonicError(f"Bad mnemonic given: {mnemonic}")
 
+    def _is_authenticated(self, response):
+        """
+        Checks that a request was returned a sessionID.
+        :param response: The request response to be checked
+        :return: boolean - true if authenticated
+        """
+        try:
+            response.json()["sessionId"]
+            # The ICAT authenticator will return a 200 even if the credentials are bad, so we check that a sessionId is
+            # returned in the response instead
+            return True
+        except KeyError:
+            return False
+
 
 
 class AuthenticationHandler(object):
