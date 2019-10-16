@@ -5,8 +5,10 @@ from functools import wraps
 import jwt
 import requests
 
-from common.constants import SECRET
+
+from common.constants import SECRET, ICAT_AUTH_URL
 from common.exceptions import MissingMnemonicError, BadMnemonicError, AuthenticationError
+
 
 
 class ICATAuthenticator(object):
@@ -20,7 +22,7 @@ class ICATAuthenticator(object):
         self._check_mnemonic(mnemonic)
         data = {"json": json.dumps({"plugin": "anon"})} if credentials is None else {
             "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
-        response = requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session", data=data)
+        response = requests.post(ICAT_AUTH_URL, data=data)
         if self._is_authenticated(response):
             return response.json()
         raise AuthenticationError("The credentials provided were not able to authenticate")
@@ -42,6 +44,7 @@ class ICATAuthenticator(object):
             return True
         except KeyError:
             return False
+
 
 
 
