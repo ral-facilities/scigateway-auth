@@ -1,4 +1,5 @@
 import json
+import traceback
 from functools import wraps
 
 import jwt
@@ -33,6 +34,7 @@ class AuthenticationHandler(object):
     An AuthenticationHandler can be used to verify JWTs, insert sessions into JWTs and create ICATAuthenticators to
     get ICAT session IDs
     """
+
     def __init__(self):
         self.mnemonic = None
         self.credentials = None
@@ -84,14 +86,17 @@ def requires_mnemonic(method):
     """
     Decorator for the /login post method to handle the case where a mnemonic is not provided
     """
+
     @wraps(method)
     def wrapper(*args, **kwargs):
         try:
             return method(*args, **kwargs)
         except MissingMnemonicError:
             return "Missing mnemonic", 400
+        except BadMnemonicError:
+            return "Bad mnemonic given", 400
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return "Something went wrong", 500
 
     return wrapper
