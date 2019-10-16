@@ -22,7 +22,7 @@ class ICATAuthenticator(object):
             "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
         response = requests.post("https://icat-dev.isis.stfc.ac.uk/icat/session", data=data)
         if self._is_authenticated(response):
-        return response.json()
+            return response.json()
         raise AuthenticationError("The credentials provided were not able to authenticate")
 
     def _check_mnemonic(self, mnemonic):
