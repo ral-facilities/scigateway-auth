@@ -34,5 +34,11 @@ class Config(object):
         except:
             sys.exit("Missing config value: icat_auth_url")
 
+    def get_log_level(self):
+        try:
+            return self.config["log_level"]
+        except:
+            sys.exit("Missing config value, log_level")
+
 
 config = Config()
