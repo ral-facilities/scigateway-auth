@@ -38,6 +38,8 @@ class TestICATAuthenticator(TestCase):
         self.authenticator._check_mnemonic("ldap")
         self.authenticator._check_mnemonic("anon")
         self.authenticator._check_mnemonic("uows")
+        self.authenticator._check_mnemonic("db")
+        self.authenticator._check_mnemonic("simple")
         self.assertRaises(BadMnemonicError, self.authenticator._check_mnemonic, None)
         self.assertRaises(BadMnemonicError, self.authenticator._check_mnemonic, "test")
         self.assertRaises(BadMnemonicError, self.authenticator._check_mnemonic, 1)
