@@ -26,7 +26,7 @@ class ICATAuthenticator(object):
         raise AuthenticationError("The credentials provided were not able to authenticate")
 
     def _check_mnemonic(self, mnemonic):
-        if mnemonic != "anon" and mnemonic != "ldap" and mnemonic != "uows":
+        if mnemonic != "anon" and mnemonic != "ldap" and mnemonic != "uows" and mnemonic != "simple" and mnemonic != "db":
             raise BadMnemonicError(f"Bad mnemonic given: {mnemonic}")
 
     def _is_authenticated(self, response):
