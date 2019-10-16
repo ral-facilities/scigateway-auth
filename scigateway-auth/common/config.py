@@ -28,5 +28,11 @@ class Config(object):
         except:
             sys.exit("Missing config value: debug_mode")
 
+    def get_icat_auth_url(self):
+        try:
+            return self.config["icat_auth_url"]
+        except:
+            sys.exit("Missing config value: icat_auth_url")
+
 
 config = Config()
