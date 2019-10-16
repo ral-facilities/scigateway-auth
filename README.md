@@ -14,8 +14,8 @@ Authentication API for the SciGateway web application
 All requirements can be installed with `pip install -r requirements.txt`
 
 ## Setup and running the API  
-To run the apple, you must first create a `config.json` in the same level as `config.json.example`.
-Then api may be ran by using `python scigateway-auth/app.py`
+To run the application, you must first create a `config.json` in the same level as `config.json.example`.
+Then the api may be ran by using `python scigateway-auth/app.py`
 
 
 ## Project structure
