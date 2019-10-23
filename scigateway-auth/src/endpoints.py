@@ -36,7 +36,7 @@ class LoginEndpoint(Endpoint):
         except KeyError:
             raise MissingMnemonicError("No mnemonic")
         try:
-            log.info("Attempting to get credentials from posy body")
+            log.info("Attempting to get credentials from post body")
             self.auth_handler.set_credentials(data["credentials"])
         except KeyError:
             log.info("No credentials given")
