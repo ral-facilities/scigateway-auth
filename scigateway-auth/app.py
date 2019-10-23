@@ -2,11 +2,14 @@ from flask import Flask
 from flask_restful import Api
 
 from common.config import config
+from common.logger_setup import setup_logger
 from src.endpoints import LoginEndpoint, VerifyEndpoint
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 api = Api(app)
+
+setup_logger()
 
 api.add_resource(LoginEndpoint, "/login")
 api.add_resource(VerifyEndpoint, "/verify")

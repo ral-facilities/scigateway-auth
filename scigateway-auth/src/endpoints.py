@@ -1,14 +1,19 @@
+import logging
+
 from flask import request
 from flask_restful import Resource
 
 from common.exceptions import MissingMnemonicError
 from src.auth import AuthenticationHandler, requires_mnemonic
 
+log = logging.getLogger()
+
 
 class Endpoint(Resource):
     """
     Subclass of the flask restful resource class. This gives both endpoints their own AuthenticationHandlers
     """
+
     def __init__(self):
         super().__init__()
         self.auth_handler = AuthenticationHandler()
@@ -19,18 +24,22 @@ class LoginEndpoint(Endpoint):
     Subclass of Endpoint to give the /login endpoint a method to extract the mnemonic and credentials from the json in
     the post body.
     """
+
     def get_credentials_from_post_body(self):
         """
         Gets the mnemonic and the credentials from the post body and set them for AuthenticationHandler
         """
         data = request.json
         try:
+            log.info("Getting mnemonic from post body")
             self.auth_handler.set_mnemonic(data["mnemonic"])
         except KeyError:
             raise MissingMnemonicError("No mnemonic")
         try:
+            log.info("Attempting to get credentials from post body")
             self.auth_handler.set_credentials(data["credentials"])
         except KeyError:
+            log.info("No credentials given")
             pass
 
     @requires_mnemonic
