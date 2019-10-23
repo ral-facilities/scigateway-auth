@@ -1,24 +1,53 @@
 import logging
+import json
+
 from functools import wraps
 
 import jwt
 import requests
 
+
 from common.constants import SECRET, ICAT_AUTH_URL
-from common.exceptions import MissingMnemonicError
+from common.exceptions import MissingMnemonicError, BadMnemonicError, AuthenticationError
+
 
 log = logging.getLogger()
 
 
 class ICATAuthenticator(object):
     def authenticate(self, mnemonic, credentials=None):
-        log.info(f"Authenticating at {ICAT_AUTH_URL} with mnemonic: {mnemonic}")
-        if credentials is None:
-            return requests.post(ICAT_AUTH_URL,
-                                 data={"json": f'{{"plugin": "{mnemonic}"}}'}).json()
+        """
+        Sends an authentication request to the icat authenticator and returns the session_id
+        :param mnemonic: The mnemonic to use to authenticate
+        :param credentials: The credentials to authenticate with
+        :return: The session id
+        """
+        log.info(f"Authenticating at {ICAT_AUTH_URL} with mnemonic: {mnemonic}")    
+        self._check_mnemonic(mnemonic)
+        data = {"json": json.dumps({"plugin": "anon"})} if credentials is None else {
+            "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
+        response = requests.post(ICAT_AUTH_URL, data=data)
+        if self._is_authenticated(response):
+            return response.json()
+        raise AuthenticationError("The credentials provided were not able to authenticate")
 
-        return requests.post(ICAT_AUTH_URL,
-                             data={"json": f'{{"plugin": {mnemonic},"credentials":{credentials}}}'})
+    def _check_mnemonic(self, mnemonic):
+        if mnemonic != "anon" and mnemonic != "ldap" and mnemonic != "uows" and mnemonic != "simple" and mnemonic != "db":
+            raise BadMnemonicError(f"Bad mnemonic given: {mnemonic}")
+
+    def _is_authenticated(self, response):
+        """
+        Checks that a request was returned a sessionID.
+        :param response: The request response to be checked
+        :return: boolean - true if authenticated
+        """
+        try:
+            response.json()["sessionId"]
+            # The ICAT authenticator will return a 200 even if the credentials are bad, so we check that a sessionId is
+            # returned in the response instead
+            return True
+        except KeyError:
+            return False
 
 
 class AuthenticationHandler(object):
@@ -92,6 +121,10 @@ def requires_mnemonic(method):
         except MissingMnemonicError as e:
             log.exception(e)
             return "Missing mnemonic", 400
+        except BadMnemonicError:
+            return "Bad mnemonic given", 400
+        except AuthenticationError:
+            return "Bad credentials", 403
         except Exception as e:
             log.exception(e)
             return "Something went wrong", 500

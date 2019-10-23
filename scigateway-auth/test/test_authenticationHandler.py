@@ -12,7 +12,7 @@ def mock_post_requests(*args, **kwargs):
         def json(self):
             return self.json_data
 
-    return MockResponse({"session_id": "test"}, 200)
+    return MockResponse({"sessionId": "test"}, 200)
 
 
 class TestAuthenticationHandler(TestCase):
@@ -26,8 +26,9 @@ class TestAuthenticationHandler(TestCase):
 
     @mock.patch("requests.post", side_effect=mock_post_requests)
     def test_get_jwt(self, mock_get):
+        self.handler.set_mnemonic("anon")
         token = self.handler.get_jwt()
-        expected_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uX2lkIjoidGVzdCJ9.8WxX7mlf1rrIcHqUyDXQMz5hsrsE-w3957U6Sqf06vc"
+        expected_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiJ0ZXN0In0.Dxb3U8sO1va-U3ZMRFMo2h5XZpL0ZCy85UnbxY4WuYk"
         self.assertEqual(token, expected_token)
 
 
