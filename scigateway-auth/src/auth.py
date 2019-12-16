@@ -7,7 +7,7 @@ import jwt
 import requests
 
 
-from common.constants import SECRET, ICAT_AUTH_URL
+from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_AUTH_URL
 from common.exceptions import MissingMnemonicError, BadMnemonicError, AuthenticationError
 
 
@@ -82,7 +82,7 @@ class AuthenticationHandler(object):
         :return: The encoded JWT
         """
         log.info("Encoding JWT")
-        token = jwt.encode(dictionary, SECRET, algorithm="HS256")
+        token = jwt.encode(dictionary, PRIVATE_KEY, algorithm="RS256")
         log.info("Returning JWT")
         return token.decode("utf-8")
 
@@ -101,7 +101,7 @@ class AuthenticationHandler(object):
         """
         try:
             log.info("Verifying token")
-            jwt.decode(token, SECRET, algorithms=["HS256"])
+            jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
             log.info("Token verified")
             return "", 200
         except:
