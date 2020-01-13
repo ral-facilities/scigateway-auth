@@ -37,7 +37,10 @@ class LoginEndpoint(Endpoint):
             raise MissingMnemonicError("No mnemonic")
         try:
             log.info("Attempting to get credentials from post body")
-            self.auth_handler.set_credentials(data["credentials"])
+            credentials = [{key: value}
+                           for key, value in data["credentials"].items()]
+
+            self.auth_handler.set_credentials(credentials)
         except KeyError:
             log.info("No credentials given")
             pass
