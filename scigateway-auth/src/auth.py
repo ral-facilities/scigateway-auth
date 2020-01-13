@@ -41,7 +41,7 @@ class ICATAuthenticator(object):
         properties = response.json()
         try:
             return properties["authenticators"]
-        except KeyError():
+        except KeyError:
             return []
 
 
