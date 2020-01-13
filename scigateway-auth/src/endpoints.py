@@ -11,12 +11,21 @@ log = logging.getLogger()
 
 class Endpoint(Resource):
     """
-    Subclass of the flask restful resource class. This gives both endpoints their own AuthenticationHandlers
+    Subclass of the flask restful resource class. This gives endpoints their own AuthenticationHandlers
     """
 
     def __init__(self):
         super().__init__()
         self.auth_handler = AuthenticationHandler()
+
+
+class AuthenticatorsEndpoint(Endpoint):
+    def get(self):
+        """
+        The get method for the /authenticators endpoint.  Returns a list of valid ICAT authenticators
+        :return: The list of ICAT authenticators
+        """
+        return self.auth_handler.get_authenticators(), 200
 
 
 class LoginEndpoint(Endpoint):

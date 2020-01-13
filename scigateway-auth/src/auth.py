@@ -6,10 +6,8 @@ from functools import wraps
 import jwt
 import requests
 
-
-from common.constants import SECRET, ICAT_AUTH_URL
-from common.exceptions import MissingMnemonicError, BadMnemonicError, AuthenticationError
-
+from common.constants import SECRET, ICAT_URL
+from common.exceptions import MissingMnemonicError, AuthenticationError
 
 log = logging.getLogger()
 
@@ -22,32 +20,29 @@ class ICATAuthenticator(object):
         :param credentials: The credentials to authenticate with
         :return: The session id
         """
-        log.info(f"Authenticating at {ICAT_AUTH_URL} with mnemonic: {mnemonic}")    
-        self._check_mnemonic(mnemonic)
+        log.info(
+            f"Authenticating at {ICAT_URL} with mnemonic: {mnemonic}")
         data = {"json": json.dumps({"plugin": "anon"})} if credentials is None else {
             "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
-        response = requests.post(ICAT_AUTH_URL, data=data)
-        if self._is_authenticated(response):
+        response = requests.post(f"{ICAT_URL}/session", data=data)
+        if response.status_code is 200:
             return response.json()
-        raise AuthenticationError("The credentials provided were not able to authenticate")
+        else:
+            raise AuthenticationError(response.json()["message"])
 
-    def _check_mnemonic(self, mnemonic):
-        if mnemonic != "anon" and mnemonic != "ldap" and mnemonic != "uows" and mnemonic != "simple" and mnemonic != "db":
-            raise BadMnemonicError(f"Bad mnemonic given: {mnemonic}")
-
-    def _is_authenticated(self, response):
+    def get_authenticators(self):
         """
-        Checks that a request was returned a sessionID.
-        :param response: The request response to be checked
-        :return: boolean - true if authenticated
+        Sends an request to ICAT to get the properties and parses the response to a list of authenticators
+        :return: The list of ICAT authenticator mnemonics and their friendly names
         """
+        log.info(
+            f"Querying ICAT at {ICAT_URL} to get its list of mnemonics")
+        response = requests.get(f"{ICAT_URL}/properties")
+        properties = response.json()
         try:
-            response.json()["sessionId"]
-            # The ICAT authenticator will return a 200 even if the credentials are bad, so we check that a sessionId is
-            # returned in the response instead
-            return True
-        except KeyError:
-            return False
+            return properties["authenticators"]
+        except KeyError():
+            return []
 
 
 class AuthenticationHandler(object):
@@ -65,6 +60,10 @@ class AuthenticationHandler(object):
 
     def set_credentials(self, credentials):
         self.credentials = credentials
+
+    def get_authenticators(self):
+        authenticator = ICATAuthenticator()
+        return authenticator.get_authenticators()
 
     def _get_payload(self):
         """
@@ -121,10 +120,9 @@ def requires_mnemonic(method):
         except MissingMnemonicError as e:
             log.exception(e)
             return "Missing mnemonic", 400
-        except BadMnemonicError:
-            return "Bad mnemonic given", 400
-        except AuthenticationError:
-            return "Bad credentials", 403
+        except AuthenticationError as e:
+            log.exception(e)
+            return str(e), 403
         except Exception as e:
             log.exception(e)
             return "Something went wrong", 500
