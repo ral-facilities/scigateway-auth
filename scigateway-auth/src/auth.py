@@ -39,10 +39,7 @@ class ICATAuthenticator(object):
             f"Querying ICAT at {ICAT_URL} to get its list of mnemonics")
         response = requests.get(f"{ICAT_URL}/properties")
         properties = response.json()
-        try:
-            return properties["authenticators"]
-        except KeyError:
-            return []
+        return properties["authenticators"]
 
 
 class AuthenticationHandler(object):

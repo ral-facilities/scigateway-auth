@@ -25,7 +25,10 @@ class AuthenticatorsEndpoint(Endpoint):
         The get method for the /authenticators endpoint.  Returns a list of valid ICAT authenticators
         :return: The list of ICAT authenticators
         """
-        return self.auth_handler.get_authenticators(), 200
+        try:
+            return self.auth_handler.get_authenticators(), 200
+        except KeyError:
+            return "Failed to retrieve authenticators", 500
 
 
 class LoginEndpoint(Endpoint):

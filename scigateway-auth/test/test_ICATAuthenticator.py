@@ -50,5 +50,7 @@ class TestICATAuthenticator(TestCase):
 
     @mock.patch("requests.get", side_effect=mock_bad_icat_properties_request)
     def test_get_authenticators_with_bad_response(self, mock_get):
-        result = self.authenticator.get_authenticators()
-        self.assertEqual(result, [])
+        with self.assertRaises(KeyError) as ctx:
+            self.authenticator.get_authenticators()
+        self.assertEqual("'authenticators'", str(ctx.exception))
+
