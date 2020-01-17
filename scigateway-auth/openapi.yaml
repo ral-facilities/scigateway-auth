@@ -2,32 +2,36 @@ openapi: 3.0.0
 info:
   description: scigateway authentication api
   title: scigateway-auth
-  version: '0'
+  version: "0"
 servers:
-- url: http://localhost:5050
+  - url: http://localhost:5000
 paths:
   /verify:
     post:
+      summary: Given a JWT, verify that it is a valid JWT (e.g. signed by us, not expired etc.)
       requestBody:
-          description: The JWT that is to be verified by the api.
-          required: true
-          content:
-            application/json:
-              schema:
-                type: object
-              example:
-                token: xxxxx.yyyyy.zzzzz
+        description: The JWT that is to be verified by the api.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: xxxxx.yyyyy.zzzzz
       responses:
-        '400':
-          description: When a bad request is sent
-        '401':
-          description: When no post body is sent
-        '403':
-          description: When the token is not valid
-        '200':
+        "200":
           description: When the token is valid
+        "400":
+          description: When a bad request is sent
+        "401":
+          description: When no post body is sent
+        "403":
+          description: When the token is not valid
   /login:
     post:
+      summary: Given a mnemonic and credentials, attempt too authenticate the user
       requestBody:
         description: The mnemonic and credentials to be used to login and obtain a session
         required: true
@@ -35,18 +39,72 @@ paths:
           application/json:
             schema:
               type: object
-            example:
-              mnemonic: uows
-              credentials:
-                - username: user
-                - password: password
+              properties:
+                mnemonic: 
+                  type: string
+                  example: uows
+                credentials:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: user
+                    password:
+                      type: string
+                      example: password
       responses:
-        '400':
-          description: When a bad request is sent
-        '401':
-          description: When no post body is sent
-        '200':
+        "200":
           description: A JWT
-        '403':
+          content:
+            application/json:
+              schema:
+                type: string
+                example: xxxxx.yyyyy.zzzzz
+
+        "400":
+          description: When a bad request is sent
+        "401":
+          description: When no post body is sent
+        "403":
           description: When bad credentials are provided
-        
+  /authenticators:
+    get:
+      summary: Returns a list of valid ICAT authenticators
+      responses:
+        "200":
+          description: The list of ICAT authenticators
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - mnemonic
+                    - keys
+                  properties:
+                    mnemonic: 
+                      type: string
+                      example: ldap
+                    keys:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - name
+                        properties:
+                          name: 
+                            type: string
+                            example: username
+                          hidden: 
+                            type: boolean
+                            default: false
+                    friendly:
+                      type: string
+                      example: LDAP
+                    admin:
+                      type: boolean
+                      default: false
+                
+        "500":
+          description: When the call to ICAT fails
