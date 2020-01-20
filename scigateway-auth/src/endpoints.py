@@ -50,7 +50,7 @@ class LoginEndpoint(Endpoint):
         :return: The JWT
         """
         self.get_credentials_from_post_body()
-        return self.auth_handler.get_jwt(), 200
+        return self.auth_handler.get_access_token(), 200, {'Set-Cookie': f'scigateway:refresh_token={self.auth_handler.get_refresh_token()}; Max-Age=604800; Secure; HttpOnly; SameSite=Lax'}
 
 
 class VerifyEndpoint(Endpoint):
@@ -60,3 +60,27 @@ class VerifyEndpoint(Endpoint):
         :return: ("", 200) if it is a valid JWT, ("Unauthorized",403) otherwise.
         """
         return self.auth_handler.verify_token(request.json["token"])
+
+
+class RefreshEndpoint(Endpoint):
+    def post(self):
+        """
+        Gives a new access token given a refresh token cookie and an expired access token
+        :return: ("", 200) if it is a valid refresh token,
+                 ("Unauthorized",403) if it's invalid or
+                 ("No refresh token cookie found",400) if no refresh token is found.
+                 ("No previous access token found",400) if no access token is found.
+        """
+        try:
+            refresh_token = request.cookies["scigateway:refresh_token"]
+        except KeyError:
+            log.info("No refresh token cookie found")
+            return "No refresh token cookie found", 400
+        try:
+            access_token = request.json["token"]
+        except (TypeError, KeyError):
+            log.info("No access token found")
+            return "No access token found", 400
+        return self.auth_handler.refresh_token(refresh_token, access_token)
+        
+        
