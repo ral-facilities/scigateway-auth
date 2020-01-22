@@ -31,7 +31,7 @@ paths:
           description: When the token is not valid
   /login:
     post:
-      summary: Given a mnemonic and credentials, attempt too authenticate the user
+      summary: Given a mnemonic and credentials, attempt to authenticate the user
       requestBody:
         description: The mnemonic and credentials to be used to login and obtain a session
         required: true
