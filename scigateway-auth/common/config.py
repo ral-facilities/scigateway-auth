@@ -28,11 +28,11 @@ class Config(object):
         except:
             sys.exit("Missing config value: debug_mode")
 
-    def get_icat_auth_url(self):
+    def get_icat_url(self):
         try:
-            return self.config["icat_auth_url"]
+            return self.config["icat_url"]
         except:
-            sys.exit("Missing config value: icat_auth_url")
+            sys.exit("Missing config value: icat_url")
 
     def get_log_level(self):
         try:

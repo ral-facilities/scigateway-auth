@@ -4,10 +4,11 @@ info:
   title: scigateway-auth
   version: "0"
 servers:
-  - url: http://localhost:5050
+  - url: http://localhost:5000
 paths:
   /verify:
     post:
+      summary: Given a JWT, verify that it is a valid JWT (e.g. signed by us, not expired etc.)
       requestBody:
         description: The JWT that is to be verified by the api.
         required: true
@@ -15,26 +16,28 @@ paths:
           application/json:
             schema:
               type: object
-            example:
-              token: xxxxx.yyyyy.zzzzz
+              properties:
+                token:
+                  type: string
+                  example: xxxxx.yyyyy.zzzzz
       responses:
+        "200":
+          description: When the token is valid
         "400":
           description: When a bad request is sent
         "401":
           description: When no post body is sent
         "403":
           description: When the token is not valid
-        "200":
-          description: When the token is valid
   /refresh:
     post:
       summary: Use a refresh token to generate a new access token from an old one
       parameters:
         - in: cookie
-        name: scigateway:refresh_token
-        schema:
-          type: string
-          example: xxxxx.yyyyy.zzzzz
+          name: scigateway:refresh_token
+          schema:
+            type: string
+            example: xxxxx.yyyyy.zzzzz
       requestBody:
         description: The old access token that needs refreshing
         required: true
@@ -60,6 +63,7 @@ paths:
           description: When either the refresh token is unauthorized or the access token is unable to be refreshed
   /login:
     post:
+      summary: Given a mnemonic and credentials, attempt to authenticate the user
       requestBody:
         description: The mnemonic and credentials to be used to login and obtain a session
         required: true
@@ -67,17 +71,72 @@ paths:
           application/json:
             schema:
               type: object
-            example:
-              mnemonic: uows
-              credentials:
-                - username: user
-                - password: password
+              properties:
+                mnemonic: 
+                  type: string
+                  example: uows
+                credentials:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: user
+                    password:
+                      type: string
+                      example: password
       responses:
+        "200":
+          description: A JWT
+          content:
+            application/json:
+              schema:
+                type: string
+                example: xxxxx.yyyyy.zzzzz
+
         "400":
           description: When a bad request is sent
         "401":
           description: When no post body is sent
-        "200":
-          description: A JWT
         "403":
           description: When bad credentials are provided
+  /authenticators:
+    get:
+      summary: Returns a list of valid ICAT authenticators
+      responses:
+        "200":
+          description: The list of ICAT authenticators
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - mnemonic
+                    - keys
+                  properties:
+                    mnemonic: 
+                      type: string
+                      example: ldap
+                    keys:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - name
+                        properties:
+                          name: 
+                            type: string
+                            example: username
+                          hidden: 
+                            type: boolean
+                            default: false
+                    friendly:
+                      type: string
+                      example: LDAP
+                    admin:
+                      type: boolean
+                      default: false
+                
+        "500":
+          description: When the call to ICAT fails

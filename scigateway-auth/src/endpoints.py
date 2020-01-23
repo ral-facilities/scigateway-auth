@@ -11,12 +11,24 @@ log = logging.getLogger()
 
 class Endpoint(Resource):
     """
-    Subclass of the flask restful resource class. This gives both endpoints their own AuthenticationHandlers
+    Subclass of the flask restful resource class. This gives endpoints their own AuthenticationHandlers
     """
 
     def __init__(self):
         super().__init__()
         self.auth_handler = AuthenticationHandler()
+
+
+class AuthenticatorsEndpoint(Endpoint):
+    def get(self):
+        """
+        The get method for the /authenticators endpoint.  Returns a list of valid ICAT authenticators
+        :return: The list of ICAT authenticators
+        """
+        try:
+            return self.auth_handler.get_authenticators(), 200
+        except KeyError:
+            return "Failed to retrieve authenticators", 500
 
 
 class LoginEndpoint(Endpoint):
@@ -37,7 +49,10 @@ class LoginEndpoint(Endpoint):
             raise MissingMnemonicError("No mnemonic")
         try:
             log.info("Attempting to get credentials from post body")
-            self.auth_handler.set_credentials(data["credentials"])
+            credentials = [{key: value}
+                           for key, value in data["credentials"].items()]
+
+            self.auth_handler.set_credentials(credentials)
         except KeyError:
             log.info("No credentials given")
             pass
