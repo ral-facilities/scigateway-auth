@@ -55,8 +55,8 @@ class ICATAuthenticator(object):
         :param session_id: The session ID to refresh
         """
         log.info(
-            f"Refreshing session ID {session_id} at {ICAT_AUTH_URL}")
-        response = requests.put(f"{ICAT_AUTH_URL}/{session_id}")
+            f"Refreshing session ID {session_id} at {ICAT_URL}")
+        response = requests.put(f"{ICAT_URL}/session/{session_id}")
         if response.status_code != 204:
             raise AuthenticationError(
                 "The session ID was unable to be refreshed")
