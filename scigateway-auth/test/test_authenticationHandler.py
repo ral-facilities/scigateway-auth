@@ -73,6 +73,13 @@ class TestAuthenticationHandler(TestCase):
         result = self.handler.refresh_token(refresh_token, access_token)
         self.assertEqual(result, ("Refresh token was not valid", 403))
 
+    @mock.patch("src.auth.BLACKLIST", ["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk5OTk5OTk5OTl9.-uzIkAKdwAovyjV1ICaLT8G5WGxG5rJ5SLTBSOHMaP0"])
+    def test_refresh_token_error_blacklisted_refresh_token(self):
+        refresh_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk5OTk5OTk5OTl9.-uzIkAKdwAovyjV1ICaLT8G5WGxG5rJ5SLTBSOHMaP0"
+        access_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiJ0ZXN0IiwiZXhwIjoxNTc4NDQxOTAwfQ.Fb6XjGfjf0IAWo8ndGnbbP_iHhUxtj-x6adg391LUPc"
+        result = self.handler.refresh_token(refresh_token, access_token)
+        self.assertEqual(result, ("Refresh token was not valid", 403))
+
     @mock.patch("requests.put", side_effect=mock_session_put_request_failure)
     @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
     def test_refresh_token_error_access_token_refresh_failure(self, mock_put, mock_now):
