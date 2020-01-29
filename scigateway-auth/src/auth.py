@@ -26,7 +26,21 @@ class ICATAuthenticator(object):
             "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
         response = requests.post(f"{ICAT_URL}/session", data=data)
         if response.status_code is 200:
-            return response.json()
+            return response.json()["sessionId"]
+        else:
+            raise AuthenticationError(response.json()["message"])
+
+    def get_username(self, session_id):
+        """
+        Sends requests to ICAT to retrieve the user's username
+        :param session_id: The session id of the user who we want to get info for
+        :return: The user's username
+        """
+        log.info(
+            f"Retrieving username for session id {session_id} at {ICAT_URL}")
+        response = requests.get(f"{ICAT_URL}/session/{session_id}")
+        if response.status_code is 200:
+            return response.json()["userName"]
         else:
             raise AuthenticationError(response.json()["message"])
 
@@ -69,7 +83,12 @@ class AuthenticationHandler(object):
         """
         log.info("Creating ICATAuthenticator")
         authenticator = ICATAuthenticator()
-        return authenticator.authenticate(self.mnemonic, credentials=self.credentials)
+        session_id = authenticator.authenticate(self.mnemonic, credentials=self.credentials)
+        username = authenticator.get_username(session_id)
+        return {
+            "sessionId": session_id,
+            "username": username
+        }
 
     def _pack_jwt(self, dictionary):
         """

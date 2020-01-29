@@ -21,6 +21,12 @@ def mock_good_icat_authenticate_request(*args, **kwargs):
 def mock_bad_icat_authenticate_request(*args, **kwargs):
     return MockResponse({"code": "SESSION", "message": "Error logging in. Please try again later"}, 400)
 
+def mock_successful_icat_session_get_request(*args, **kwargs):
+    return MockResponse({"userName": "test name", "remainingMinutes": 60}, 200)
+
+def mock_unsuccessful_icat_session_get_request(*args, **kwargs):
+    return MockResponse({"code": "SESSION", "message": "Unable to find user by sessionid: test"}, 400)
+
 def mock_good_icat_properties_request(*args, **kwargs):
     return MockResponse({"authenticators": [{"mnemonic": "anon", "keys": []}]}, 200)
 
@@ -35,13 +41,24 @@ class TestICATAuthenticator(TestCase):
     @mock.patch("requests.post", side_effect=mock_good_icat_authenticate_request)
     def test_authenticate_with_good_response(self, mock_post):
         result = self.authenticator.authenticate("test", {"username": "valid", "password": "credentials"})
-        self.assertDictEqual(result, {"sessionId": "test"})
+        self.assertEqual(result, "test")
 
     @mock.patch("requests.post", side_effect=mock_bad_icat_authenticate_request)
     def test_authenticate_with_bad_response(self, mock_post):
         with self.assertRaises(AuthenticationError) as ctx:
             self.authenticator.authenticate("test", {"username": "valid", "password": "credentials"})
         self.assertEqual("Error logging in. Please try again later", str(ctx.exception))
+
+    @mock.patch("requests.get", side_effect=mock_successful_icat_session_get_request)
+    def test_get_username_with_good_response(self, mock_post):
+        result = self.authenticator.get_username("test")
+        self.assertEqual(result, "test name")
+
+    @mock.patch("requests.get", side_effect=mock_unsuccessful_icat_session_get_request)
+    def test_get_username_with_bad_response(self, mock_post):
+        with self.assertRaises(AuthenticationError) as ctx:
+            self.authenticator.get_username("test")
+        self.assertEqual("Unable to find user by sessionid: test", str(ctx.exception))
 
     @mock.patch("requests.get", side_effect=mock_good_icat_properties_request)
     def test_get_authenticators_with_good_response(self, mock_get):
