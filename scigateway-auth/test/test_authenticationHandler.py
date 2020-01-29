@@ -23,7 +23,8 @@ def mock_session_put_request_failure(*args, **kwargs):
 def mock_datetime_now(*args, **kwargs):
     return datetime.datetime(2020, 1, 8)
 
-
+@mock.patch("src.auth.ACCESS_TOKEN_VALID_FOR", 5)
+@mock.patch("src.auth.REFRESH_TOKEN_VALID_FOR", 10080)
 class TestAuthenticationHandler(TestCase):
     def setUp(self):
         self.handler = AuthenticationHandler()
