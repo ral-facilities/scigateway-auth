@@ -29,6 +29,38 @@ paths:
           description: When no post body is sent
         "403":
           description: When the token is not valid
+  /refresh:
+    post:
+      summary: Use a refresh token to generate a new access token from an old one
+      parameters:
+        - in: cookie
+          name: scigateway:refresh_token
+          schema:
+            type: string
+            example: xxxxx.yyyyy.zzzzz
+      requestBody:
+        description: The old access token that needs refreshing
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: "xxxxx.yyyyy.zzzzz"
+      responses:
+        "200":
+          description: A new access token
+          content:
+            application/json:
+              schema:
+                type: string
+                example: xxxxx.yyyyy.zzzzz
+        "400":
+          description: When either the refresh token or access token are missing
+        "403":
+          description: When either the refresh token is unauthorized or the access token is unable to be refreshed
   /login:
     post:
       summary: Given a mnemonic and credentials, attempt to authenticate the user
