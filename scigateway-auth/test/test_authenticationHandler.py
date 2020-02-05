@@ -9,6 +9,7 @@ with open("scigateway-auth/test/keys/jwt-key", "r") as f:
 with open("scigateway-auth/test/keys/jwt-key.pub", "r") as f:
     PUBLIC_KEY = f.read()
 
+
 class MockResponse(object):
         def __init__(self, json_data, status_code):
             self.json_data = json_data

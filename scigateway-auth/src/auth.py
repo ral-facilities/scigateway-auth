@@ -149,8 +149,7 @@ class AuthenticationHandler(object):
                     f"Attempted refresh from token in blacklist: {token}")
                 raise Exception("JWT in blacklist")
             log.info("Token verified")
-        except Exception as e:
-            print(e)
+        except:
             log.warning("Refresh token was not valid")
             return "Refresh token was not valid", 403
 
