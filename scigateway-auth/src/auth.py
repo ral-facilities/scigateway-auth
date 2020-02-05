@@ -6,8 +6,15 @@ from functools import wraps
 import jwt
 import requests
 
-from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL
+from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR
 from common.exceptions import MissingMnemonicError, AuthenticationError
+
+import datetime
+
+
+def current_time():
+    return datetime.datetime.now()
+
 
 log = logging.getLogger()
 
@@ -40,6 +47,18 @@ class ICATAuthenticator(object):
         response = requests.get(f"{ICAT_URL}/properties")
         properties = response.json()
         return properties["authenticators"]
+
+    def refresh(self, session_id):
+        """
+        Sends an refresh session_id request to ICAT
+        :param session_id: The session ID to refresh
+        """
+        log.info(
+            f"Refreshing session ID {session_id} at {ICAT_URL}")
+        response = requests.put(f"{ICAT_URL}/session/{session_id}")
+        if response.status_code != 204:
+            raise AuthenticationError(
+                "The session ID was unable to be refreshed")
 
 
 class AuthenticationHandler(object):
@@ -82,12 +101,22 @@ class AuthenticationHandler(object):
         log.info("Returning JWT")
         return token.decode("utf-8")
 
-    def get_jwt(self):
+    def get_access_token(self):
         """
         Return a signed JWT with ICAT session information inside
-        :return: The JWT
+        :return: The access JWT
         """
-        return self._pack_jwt(self._get_payload())
+        payload = self._get_payload()
+        payload['exp'] = current_time(
+        ) + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR)
+        return self._pack_jwt(payload)
+
+    def get_refresh_token(self):
+        """
+        Return a signed JWT with to be used as a refresh token
+        :return: The refresh JWT
+        """
+        return self._pack_jwt({'exp': current_time() + datetime.timedelta(minutes=REFRESH_TOKEN_VALID_FOR)})
 
     def verify_token(self, token):
         """
@@ -101,8 +130,43 @@ class AuthenticationHandler(object):
             log.info("Token verified")
             return "", 200
         except:
-            log.warn("Token could not be verified")
+            log.warning("Token could not be verified")
             return "Unauthorized", 403
+
+    def refresh_token(self, refresh_token, prev_access_token):
+        """
+        Given a refresh token, generate a new access token if the refresh token is valid
+        and the previous access token allows for a refresh
+        :param refresh_token: The refresh token to be checked
+        :param prev_access_token: The access token to be refreshed
+        :return: - tuple with message and status code e.g. ("", 200)
+        """
+        try:
+            log.info("Refreshing token")
+            jwt.decode(refresh_token, PUBLIC_KEY, algorithms=["RS256"])
+            if refresh_token in BLACKLIST:
+                log.warning(
+                    f"Attempted refresh from token in blacklist: {token}")
+                raise Exception("JWT in blacklist")
+            log.info("Token verified")
+        except Exception as e:
+            print(e)
+            log.warning("Refresh token was not valid")
+            return "Refresh token was not valid", 403
+
+        try:
+            payload = jwt.decode(prev_access_token, PUBLIC_KEY, algorithms=[
+                                    "RS256"], options={'verify_exp': False})
+            payload['exp'] = (current_time()
+                                + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
+            
+            log.info("Creating ICATAuthenticator")
+            authenticator = ICATAuthenticator()
+            authenticator.refresh(payload["sessionId"])
+            return self._pack_jwt(payload), 200
+        except:
+            log.warning("Unable to refresh token")
+            return "Unable to refresh token", 403
 
 
 def requires_mnemonic(method):
