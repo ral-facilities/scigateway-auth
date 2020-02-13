@@ -1,7 +1,5 @@
-
-
-from flask_restful import Api
 from flask import Flask
+from flask_restful import Api
 
 if __name__ == "__main__":  # NOQA: E402
     from common import constants
