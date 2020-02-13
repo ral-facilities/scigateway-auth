@@ -5,6 +5,7 @@ from flask_restful import Resource
 
 from common.exceptions import MissingMnemonicError
 from src.auth import AuthenticationHandler, requires_mnemonic
+from common.constants import SECURE
 
 log = logging.getLogger()
 
@@ -65,7 +66,7 @@ class LoginEndpoint(Endpoint):
         :return: The JWT
         """
         self.get_credentials_from_post_body()
-        return self.auth_handler.get_access_token(), 200, {'Set-Cookie': f'scigateway:refresh_token={self.auth_handler.get_refresh_token()}; Max-Age=604800; Secure; HttpOnly; SameSite=Lax'}
+        return self.auth_handler.get_access_token(), 200, {'Set-Cookie': f'scigateway:refresh_token={self.auth_handler.get_refresh_token()}; Max-Age=604800; {"Secure;" if SECURE else ""}HttpOnly; SameSite=Lax'}
 
 
 class VerifyEndpoint(Endpoint):
@@ -97,5 +98,3 @@ class RefreshEndpoint(Endpoint):
             log.info("No access token found")
             return "No access token found", 400
         return self.auth_handler.refresh_token(refresh_token, access_token)
-        
-        
