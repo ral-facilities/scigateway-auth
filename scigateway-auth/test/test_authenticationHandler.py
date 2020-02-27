@@ -3,10 +3,10 @@ from unittest import TestCase, mock
 from src.auth import AuthenticationHandler
 import datetime
 
-with open("scigateway-auth/test/keys/jwt-key", "r") as f:
+with open("test/keys/jwt-key", "r") as f:
     PRIVATE_KEY = f.read()
 
-with open("scigateway-auth/test/keys/jwt-key.pub", "r") as f:
+with open("test/keys/jwt-key.pub", "r") as f:
     PUBLIC_KEY = f.read()
 
 
