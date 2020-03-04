@@ -6,5 +6,6 @@
     "log_level": "DEBUG",
     "access_token_valid_for": 30,
     "refresh_token_valid_for": 10080,
-    "blacklist": []
+    "blacklist": [],
+    "verify": true,
 }
