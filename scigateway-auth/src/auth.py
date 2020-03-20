@@ -7,7 +7,7 @@ import jwt
 import requests
 
 
-from common.constants import SECRET, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR
+from common.constants import SECRET, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR, VERIFY
 from common.exceptions import MissingMnemonicError, AuthenticationError
 
 import datetime
@@ -32,7 +32,8 @@ class ICATAuthenticator(object):
             f"Authenticating at {ICAT_URL} with mnemonic: {mnemonic}")
         data = {"json": json.dumps({"plugin": "anon"})} if credentials is None else {
             "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
-        response = requests.post(f"{ICAT_URL}/session", data=data)
+        response = requests.post(
+            f"{ICAT_URL}/session", data=data, verify=VERIFY)
         if response.status_code is 200:
             return response.json()
         else:
@@ -45,7 +46,7 @@ class ICATAuthenticator(object):
         """
         log.info(
             f"Querying ICAT at {ICAT_URL} to get its list of mnemonics")
-        response = requests.get(f"{ICAT_URL}/properties")
+        response = requests.get(f"{ICAT_URL}/properties", verify=VERIFY)
         properties = response.json()
         return properties["authenticators"]
 
@@ -56,7 +57,8 @@ class ICATAuthenticator(object):
         """
         log.info(
             f"Refreshing session ID {session_id} at {ICAT_URL}")
-        response = requests.put(f"{ICAT_URL}/session/{session_id}")
+        response = requests.put(
+            f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
         if response.status_code != 204:
             raise AuthenticationError(
                 "The session ID was unable to be refreshed")
@@ -156,10 +158,10 @@ class AuthenticationHandler(object):
 
         try:
             payload = jwt.decode(prev_access_token, SECRET, algorithms=[
-                                    "HS256"], options={'verify_exp': False})
+                "HS256"], options={'verify_exp': False})
             payload['exp'] = (current_time()
-                                + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
-            
+                              + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
+
             log.info("Creating ICATAuthenticator")
             authenticator = ICATAuthenticator()
             authenticator.refresh(payload["sessionId"])
