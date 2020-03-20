@@ -14,6 +14,9 @@ class MockResponse(object):
 def mock_post_requests(*args, **kwargs):
     return MockResponse({"sessionId": "test"}, 200)
 
+def mock_get_requests(*args, **kwargs):
+    return MockResponse({"userName": "test name", "remainingMinutes": 60}, 200)
+
 def mock_session_put_request_success(*args, **kwargs):
     return MockResponse("", 204)
 
@@ -35,11 +38,12 @@ class TestAuthenticationHandler(TestCase):
         self.assertEqual(token, expected_token)
 
     @mock.patch("requests.post", side_effect=mock_post_requests)
+    @mock.patch("requests.get", side_effect=mock_get_requests)
     @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
-    def test_get_access_token(self, mock_get, mock_now):
+    def test_get_access_token(self, mock_post, mock_get, mock_now):
         self.handler.set_mnemonic("anon")
         token = self.handler.get_access_token()
-        expected_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiJ0ZXN0IiwiZXhwIjoxNTc4NDQxOTAwfQ.Fb6XjGfjf0IAWo8ndGnbbP_iHhUxtj-x6adg391LUPc"
+        expected_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiJ0ZXN0IiwidXNlcm5hbWUiOiJ0ZXN0IG5hbWUiLCJleHAiOjE1Nzg0NDE5MDB9.AQAw4dT1XWOFSpfTeBvVJBryiPQUI3OhArFcFxYZUI4"
         self.assertEqual(token, expected_token)
 
     def test_verify_token_success(self):
