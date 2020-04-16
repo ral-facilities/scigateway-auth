@@ -3,3 +3,4 @@ venv/
 *.pyc
 config.json
 scigateway-auth/logs.log
+keys/

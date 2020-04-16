@@ -4,6 +4,8 @@
     "debug_mode": false,
     "icat_url": "https://icat-dev.isis.stfc.ac.uk/icat",
     "log_level": "DEBUG",
+    "private_key_path": "keys/jwt-key",
+    "public_key_path": "keys/jwt-key.pub",
     "access_token_valid_for": 30,
     "refresh_token_valid_for": 10080,
     "blacklist": [],

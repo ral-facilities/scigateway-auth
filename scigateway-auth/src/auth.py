@@ -6,8 +6,7 @@ from functools import wraps
 import jwt
 import requests
 
-
-from common.constants import SECRET, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR, VERIFY
+from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR, VERIFY
 from common.exceptions import MissingMnemonicError, AuthenticationError
 
 import datetime
@@ -105,7 +104,8 @@ class AuthenticationHandler(object):
         """
         log.info("Creating ICATAuthenticator")
         authenticator = ICATAuthenticator()
-        session_id = authenticator.authenticate(self.mnemonic, credentials=self.credentials)
+        session_id = authenticator.authenticate(
+            self.mnemonic, credentials=self.credentials)
         username = authenticator.get_username(session_id)
         return {
             "sessionId": session_id,
@@ -119,7 +119,7 @@ class AuthenticationHandler(object):
         :return: The encoded JWT
         """
         log.info("Encoding JWT")
-        token = jwt.encode(dictionary, SECRET, algorithm="HS256")
+        token = jwt.encode(dictionary, PRIVATE_KEY, algorithm="RS256")
         log.info("Returning JWT")
         return token.decode("utf-8")
 
@@ -148,7 +148,7 @@ class AuthenticationHandler(object):
         """
         try:
             log.info("Verifying token")
-            jwt.decode(token, SECRET, algorithms=["HS256"])
+            jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
             log.info("Token verified")
             return "", 200
         except:
@@ -165,7 +165,7 @@ class AuthenticationHandler(object):
         """
         try:
             log.info("Refreshing token")
-            jwt.decode(refresh_token, SECRET, algorithms=["HS256"])
+            jwt.decode(refresh_token, PUBLIC_KEY, algorithms=["RS256"])
             if refresh_token in BLACKLIST:
                 log.warning(
                     f"Attempted refresh from token in blacklist: {token}")
@@ -176,8 +176,8 @@ class AuthenticationHandler(object):
             return "Refresh token was not valid", 403
 
         try:
-            payload = jwt.decode(prev_access_token, SECRET, algorithms=[
-                "HS256"], options={'verify_exp': False})
+            payload = jwt.decode(prev_access_token, PUBLIC_KEY, algorithms=[
+                "RS256"], options={'verify_exp': False})
             payload['exp'] = (current_time()
                               + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
 

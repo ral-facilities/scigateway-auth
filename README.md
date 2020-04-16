@@ -18,7 +18,8 @@ All requirements can be installed with `pip install -r requirements.txt`
 
 ## Setup and running the API
 
-To run the application, you must first create a `config.json` in the same level as `config.json.example`.
+To run the application, you must first create a `config.json` in the same level as `config.json.example`. You then need to generate a public/private key pair for the application to use to sign its JWTs. Running `ssh-keygen -t rsa` and creating passwordless keys should work. By default, the keys are expected to be in `scigateway-auth/keys` with the names `jwt-key` and `jwt-key.pub` - however the paths to the private and public keys can be configured in `config.json`. There are example keys used for tests in `scigateway-auth/test/keys`.
+
 Then the api may be ran by using `python scigateway-auth/app.py`
 
 The `verify` option in `config.json` corresponds to what is supplied to the [`request`](https://requests.readthedocs.io/en/master/) calls to the ICAT server. This can be set to multiple different values:
