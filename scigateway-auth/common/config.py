@@ -70,5 +70,11 @@ class Config(object):
         except:
             sys.exit("Missing config value, blacklist")
 
+    def get_verify(self):
+        try:
+            return self.config["verify"]
+        except:
+            sys.exit("Missing config value, verify")
+
 
 config = Config()

@@ -6,7 +6,7 @@ from functools import wraps
 import jwt
 import requests
 
-from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR
+from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR, VERIFY
 from common.exceptions import MissingMnemonicError, AuthenticationError
 
 import datetime
@@ -31,9 +31,24 @@ class ICATAuthenticator(object):
             f"Authenticating at {ICAT_URL} with mnemonic: {mnemonic}")
         data = {"json": json.dumps({"plugin": "anon"})} if credentials is None else {
             "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
-        response = requests.post(f"{ICAT_URL}/session", data=data)
+        response = requests.post(
+            f"{ICAT_URL}/session", data=data, verify=VERIFY)
         if response.status_code is 200:
-            return response.json()
+            return response.json()["sessionId"]
+        else:
+            raise AuthenticationError(response.json()["message"])
+
+    def get_username(self, session_id):
+        """
+        Sends requests to ICAT to retrieve the user's username
+        :param session_id: The session id of the user who we want to get info for
+        :return: The user's username
+        """
+        log.info(
+            f"Retrieving username for session id {session_id} at {ICAT_URL}")
+        response = requests.get(f"{ICAT_URL}/session/{session_id}")
+        if response.status_code is 200:
+            return response.json()["userName"]
         else:
             raise AuthenticationError(response.json()["message"])
 
@@ -44,7 +59,7 @@ class ICATAuthenticator(object):
         """
         log.info(
             f"Querying ICAT at {ICAT_URL} to get its list of mnemonics")
-        response = requests.get(f"{ICAT_URL}/properties")
+        response = requests.get(f"{ICAT_URL}/properties", verify=VERIFY)
         properties = response.json()
         return properties["authenticators"]
 
@@ -55,7 +70,8 @@ class ICATAuthenticator(object):
         """
         log.info(
             f"Refreshing session ID {session_id} at {ICAT_URL}")
-        response = requests.put(f"{ICAT_URL}/session/{session_id}")
+        response = requests.put(
+            f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
         if response.status_code != 204:
             raise AuthenticationError(
                 "The session ID was unable to be refreshed")
@@ -88,7 +104,13 @@ class AuthenticationHandler(object):
         """
         log.info("Creating ICATAuthenticator")
         authenticator = ICATAuthenticator()
-        return authenticator.authenticate(self.mnemonic, credentials=self.credentials)
+        session_id = authenticator.authenticate(
+            self.mnemonic, credentials=self.credentials)
+        username = authenticator.get_username(session_id)
+        return {
+            "sessionId": session_id,
+            "username": username
+        }
 
     def _pack_jwt(self, dictionary):
         """
@@ -155,10 +177,10 @@ class AuthenticationHandler(object):
 
         try:
             payload = jwt.decode(prev_access_token, PUBLIC_KEY, algorithms=[
-                                    "RS256"], options={'verify_exp': False})
+                "RS256"], options={'verify_exp': False})
             payload['exp'] = (current_time()
-                                + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
-            
+                              + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
+
             log.info("Creating ICATAuthenticator")
             authenticator = ICATAuthenticator()
             authenticator.refresh(payload["sessionId"])
