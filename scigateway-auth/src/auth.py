@@ -46,7 +46,7 @@ class ICATAuthenticator(object):
         """
         log.info(
             f"Retrieving username for session id {session_id} at {ICAT_URL}")
-        response = requests.get(f"{ICAT_URL}/session/{session_id}")
+        response = requests.get(f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
         if response.status_code is 200:
             return response.json()["userName"]
         else:
