@@ -6,7 +6,7 @@ from pathlib import Path
 class Config(object):
 
     def __init__(self):
-        with open(Path(__file__).parent.parent.parent / "config.json") as target:
+        with open(Path(__file__).parent.parent / "config.json") as target:
             self.config = json.load(target)
         target.close()
 
