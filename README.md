@@ -18,7 +18,7 @@ All requirements can be installed with `pip install -r requirements.txt`
 
 ## Setup and running the API
 
-To run the application, you must first create a `config.json` in the same level as `config.json.example`. You then need to generate a public/private key pair for the application to use to sign its JWTs. Running `ssh-keygen -t rsa` and creating passwordless keys should work. By default, the keys are expected to be in `keys/` with the names `jwt-key` and `jwt-key.pub` - however the paths to the private and public keys can be configured in `config.json`. There are example keys used for tests in `test/keys/`.
+To run the application, you must first create a `config.json` in the same level as `config.json.example`. You then need to generate a public/private key pair for the application to use to sign its JWTs. Running `ssh-keygen -t rsa -m 'PEM'` and creating passwordless keys should work. By default, the keys are expected to be in `keys/` with the names `jwt-key` and `jwt-key.pub` - however the paths to the private and public keys can be configured in `config.json`. There are example keys used for tests in `test/keys/`.
 
 Then the api may be started by using `python app.py`
 
