@@ -13,7 +13,7 @@ import datetime
 
 
 def current_time():
-    return datetime.datetime.now()
+    return datetime.datetime.now(datetime.timezone.utc)
 
 
 log = logging.getLogger()
