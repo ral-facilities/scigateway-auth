@@ -6,7 +6,8 @@ from functools import wraps
 import jwt
 import requests
 
-from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, REFRESH_TOKEN_VALID_FOR, VERIFY
+from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, \
+    REFRESH_TOKEN_VALID_FOR, VERIFY, ADMIN_USERS
 from common.exceptions import MissingMnemonicError, AuthenticationError
 
 import datetime
@@ -54,7 +55,8 @@ class ICATAuthenticator(object):
 
     def get_authenticators(self):
         """
-        Sends an request to ICAT to get the properties and parses the response to a list of authenticators
+        Sends an request to ICAT to get the properties and parses the response to a list of
+        authenticators
         :return: The list of ICAT authenticator mnemonics and their friendly names
         """
         log.info(
@@ -79,8 +81,8 @@ class ICATAuthenticator(object):
 
 class AuthenticationHandler(object):
     """
-    An AuthenticationHandler can be used to verify JWTs, insert sessions into JWTs and create ICATAuthenticators to
-    get ICAT session IDs
+    An AuthenticationHandler can be used to verify JWTs, insert sessions into JWTs and create
+    ICATAuthenticators to get ICAT session IDs
     """
 
     def __init__(self):
@@ -107,9 +109,11 @@ class AuthenticationHandler(object):
         session_id = authenticator.authenticate(
             self.mnemonic, credentials=self.credentials)
         username = authenticator.get_username(session_id)
+        user_is_admin = username in ADMIN_USERS
         return {
             "sessionId": session_id,
-            "username": username
+            "username": username,
+            "userIsAdmin": user_is_admin
         }
 
     def _pack_jwt(self, dictionary):
@@ -138,7 +142,8 @@ class AuthenticationHandler(object):
         Return a signed JWT with to be used as a refresh token
         :return: The refresh JWT
         """
-        return self._pack_jwt({'exp': current_time() + datetime.timedelta(minutes=REFRESH_TOKEN_VALID_FOR)})
+        return self._pack_jwt(
+            {'exp': current_time() + datetime.timedelta(minutes=REFRESH_TOKEN_VALID_FOR)})
 
     def verify_token(self, token):
         """
@@ -168,7 +173,7 @@ class AuthenticationHandler(object):
             jwt.decode(refresh_token, PUBLIC_KEY, algorithms=["RS256"])
             if refresh_token in BLACKLIST:
                 log.warning(
-                    f"Attempted refresh from token in blacklist: {token}")
+                    f"Attempted refresh from token in blacklist: {refresh_token}")
                 raise Exception("JWT in blacklist")
             log.info("Token verified")
         except:
