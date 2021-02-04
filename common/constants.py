@@ -10,5 +10,6 @@ ICAT_URL = config.get_icat_url()
 ACCESS_TOKEN_VALID_FOR = config.get_access_token_valid_for()
 REFRESH_TOKEN_VALID_FOR = config.get_refresh_token_valid_for()
 BLACKLIST = config.get_blacklist()
+ADMIN_USERS = config.get_admin_users()
 SECURE = True
 VERIFY = config.get_verify()
