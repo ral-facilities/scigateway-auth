@@ -125,12 +125,26 @@ class MaintenanceEndpoint(Endpoint):
         except (FileNotFoundError, IOError):
             return "Failed to retrieve maintenance mode state", 500
 
+    def put(self):
+        """
+        The PUT method for the /maintenance endpoint. Updates the maintenance mode state given an
+        access token and a state.
+        :return: ("Maintenance mode state successfully updated", 200) if state update is successful,
+                 ("Access token was not valid", 403) if the access token is invalid,
+                 ("Unauthorized", 403) if the user is not admin or
+                 ("Failed to update maintenance mode state", 500) if an error occurs while the JSON
+                 file is updated.
+        """
+        data = request.json
+        return self.maintenance_mode.set_state(data['token'], data['maintenance'])
+
 
 class ScheduledMaintenanceEndpoint(Endpoint):
     """
     Subclass of Endpoint to give the /scheduled_maintenance endpoint a method to extract the token
     and scheduled_maintenance from the JSON in the PUT body.
     """
+
     def get(self):
         """
         The GET method for the /scheduled_maintenance endpoint. Returns a JSON object that
@@ -141,3 +155,18 @@ class ScheduledMaintenanceEndpoint(Endpoint):
             return self.scheduled_maintenance_mode.get_state(), 200
         except (FileNotFoundError, IOError):
             return "Failed to return scheduled maintenance state", 500
+
+    def put(self):
+        """
+        The PUT method for the /scheduled_maintenance endpoint. Updates the scheduled maintenance
+        mode state given an access token and a state.
+        :return: ("Scheduled maintenance mode state successfully updated", 200) if state update is
+                 successful,
+                 ("Access token was not valid", 403) if the access token is invalid,
+                 ("Unauthorized", 403) if the user is not admin or
+                 ("Failed to update scheduled maintenance mode state", 500) if an error occurs
+                 while the JSON file is updated.
+        """
+        data = request.json
+        return self.scheduled_maintenance_mode.set_state(data['token'],
+                                                         data['scheduled_maintenance'])
