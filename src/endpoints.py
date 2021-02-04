@@ -3,27 +3,32 @@ import logging
 from flask import request
 from flask_restful import Resource
 
-from common.exceptions import MissingMnemonicError
-from src.auth import AuthenticationHandler, requires_mnemonic
 from common.constants import SECURE
+from common.exceptions import MissingMnemonicError
+from src.admin import MaintenanceMode, ScheduledMaintenanceMode
+from src.auth import AuthenticationHandler, requires_mnemonic
 
 log = logging.getLogger()
 
 
 class Endpoint(Resource):
     """
-    Subclass of the flask restful resource class. This gives endpoints their own AuthenticationHandlers
+    Subclass of the flask restful resource class. This gives endpoints their own
+    AuthenticationHandlers
     """
 
     def __init__(self):
         super().__init__()
         self.auth_handler = AuthenticationHandler()
+        self.maintenance_mode = MaintenanceMode()
+        self.scheduled_maintenance_mode = ScheduledMaintenanceMode()
 
 
 class AuthenticatorsEndpoint(Endpoint):
     def get(self):
         """
-        The get method for the /authenticators endpoint.  Returns a list of valid ICAT authenticators
+        The get method for the /authenticators endpoint.  Returns a list of valid ICAT
+        authenticators
         :return: The list of ICAT authenticators
         """
         try:
@@ -34,13 +39,14 @@ class AuthenticatorsEndpoint(Endpoint):
 
 class LoginEndpoint(Endpoint):
     """
-    Subclass of Endpoint to give the /login endpoint a method to extract the mnemonic and credentials from the json in
-    the post body.
+    Subclass of Endpoint to give the /login endpoint a method to extract the mnemonic and
+    credentials from the json in the post body.
     """
 
     def get_credentials_from_post_body(self):
         """
-        Gets the mnemonic and the credentials from the post body and set them for AuthenticationHandler
+        Gets the mnemonic and the credentials from the post body and set them for
+        AuthenticationHandler
         """
         data = request.json
         try:
@@ -61,12 +67,14 @@ class LoginEndpoint(Endpoint):
     @requires_mnemonic
     def post(self):
         """
-        The post method for the /login endpoint. Uses the ICATAuthenticator to obtain a session_id and returns a JWT
-        with the session_id as the payload
+        The post method for the /login endpoint. Uses the ICATAuthenticator to obtain a
+        session_id and returns a JWT with the session_id as the payload
         :return: The JWT
         """
         self.get_credentials_from_post_body()
-        return self.auth_handler.get_access_token(), 200, {'Set-Cookie': f'scigateway:refresh_token={self.auth_handler.get_refresh_token()}; Max-Age=604800; {"Secure;" if SECURE else ""}HttpOnly; SameSite=Lax'}
+        return self.auth_handler.get_access_token(), 200, {
+            'Set-Cookie': f'scigateway:refresh_token={self.auth_handler.get_refresh_token()}; '
+                          f'Max-Age=604800; {"Secure;" if SECURE else ""}HttpOnly; SameSite=Lax'}
 
 
 class VerifyEndpoint(Endpoint):
@@ -98,3 +106,38 @@ class RefreshEndpoint(Endpoint):
             log.info("No access token found")
             return "No access token found", 400
         return self.auth_handler.refresh_token(refresh_token, access_token)
+
+
+class MaintenanceEndpoint(Endpoint):
+    """
+    Subclass of Endpoint to give the /maintenance endpoint a method to extract the token and
+    maintenance from the JSON in the PUT body.
+    """
+
+    def get(self):
+        """
+        The GET method for the /maintenance endpoint. Returns a JSON object that represents the
+        maintenance mode state.
+        :return: The maintenance mode state in form of a JSON object.
+        """
+        try:
+            return self.maintenance_mode.get_state(), 200
+        except (FileNotFoundError, IOError):
+            return "Failed to retrieve maintenance mode state", 500
+
+
+class ScheduledMaintenanceEndpoint(Endpoint):
+    """
+    Subclass of Endpoint to give the /scheduled_maintenance endpoint a method to extract the token
+    and scheduled_maintenance from the JSON in the PUT body.
+    """
+    def get(self):
+        """
+        The GET method for the /scheduled_maintenance endpoint. Returns a JSON object that
+        represents the scheduled maintenance mode state.
+        :return: The scheduled maintenance mode state in form of a JSON object.
+        """
+        try:
+            return self.scheduled_maintenance_mode.get_state(), 200
+        except (FileNotFoundError, IOError):
+            return "Failed to return scheduled maintenance state", 500
