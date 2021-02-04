@@ -1,7 +1,9 @@
 import logging
+import jsonschema
 
 from flask import request
 from flask_restful import Resource
+from jsonschema.exceptions import ValidationError
 
 from common.constants import SECURE
 from common.exceptions import MissingMnemonicError
@@ -130,12 +132,46 @@ class MaintenanceEndpoint(Endpoint):
         The PUT method for the /maintenance endpoint. Updates the maintenance mode state given an
         access token and a state.
         :return: ("Maintenance mode state successfully updated", 200) if state update is successful,
+                 ("[Any JSON validation error message], 400") if the JSON data is invalid,
                  ("Access token was not valid", 403) if the access token is invalid,
                  ("Unauthorized", 403) if the user is not admin or
                  ("Failed to update maintenance mode state", 500) if an error occurs while the JSON
                  file is updated.
         """
+        put_schema = {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "maintenance": {
+                    "type": "object",
+                    "properties": {
+                        "show": {
+                            "type": "boolean"
+                        },
+                        "message": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "show",
+                        "message"
+                    ]
+                }
+            },
+            "required": [
+                "token",
+                "maintenance"
+            ]
+        }
         data = request.json
+        try:
+            jsonschema.validate(instance=data, schema=put_schema)
+        except ValidationError as error:
+            log.info(error)
+            return error.message, 400
+
         return self.maintenance_mode.set_state(data['token'], data['maintenance'])
 
 
@@ -162,11 +198,45 @@ class ScheduledMaintenanceEndpoint(Endpoint):
         mode state given an access token and a state.
         :return: ("Scheduled maintenance mode state successfully updated", 200) if state update is
                  successful,
+                 ("[Any JSON validation error message], 400") if the JSON data is invalid,
                  ("Access token was not valid", 403) if the access token is invalid,
                  ("Unauthorized", 403) if the user is not admin or
                  ("Failed to update scheduled maintenance mode state", 500) if an error occurs
                  while the JSON file is updated.
         """
+        put_schema = {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "scheduled_maintenance": {
+                    "type": "object",
+                    "properties": {
+                        "show": {
+                            "type": "boolean"
+                        },
+                        "message": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "show",
+                        "message"
+                    ]
+                }
+            },
+            "required": [
+                "token",
+                "scheduled_maintenance"
+            ]
+        }
         data = request.json
+        try:
+            jsonschema.validate(instance=data, schema=put_schema)
+        except ValidationError as error:
+            log.info(error)
+            return error.message, 400
+
         return self.scheduled_maintenance_mode.set_state(data['token'],
                                                          data['scheduled_maintenance'])
