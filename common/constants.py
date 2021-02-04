@@ -11,5 +11,7 @@ ACCESS_TOKEN_VALID_FOR = config.get_access_token_valid_for()
 REFRESH_TOKEN_VALID_FOR = config.get_refresh_token_valid_for()
 BLACKLIST = config.get_blacklist()
 ADMIN_USERS = config.get_admin_users()
+MAINTENANCE_CONFIG_PATH = config.get_maintenance_config_path()
+SCHEDULED_MAINTENANCE_CONFIG_PATH = config.get_scheduled_maintenance_config_path()
 SECURE = True
 VERIFY = config.get_verify()

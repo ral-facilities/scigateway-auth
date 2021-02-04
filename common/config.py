@@ -76,6 +76,18 @@ class Config(object):
         except:
             sys.exit("Missing config value, admin_users")
 
+    def get_maintenance_config_path(self):
+        try:
+            return self.config["maintenance_config_path"]
+        except:
+            sys.exit("Missing config value, maintenance_config_path")
+
+    def get_scheduled_maintenance_config_path(self):
+        try:
+            return self.config["scheduled_maintenance_config_path"]
+        except:
+            sys.exit("Missing config value, scheduled_maintenance_config_path")
+
     def get_verify(self):
         try:
             return self.config["verify"]
