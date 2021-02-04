@@ -38,6 +38,15 @@ class MaintenanceMode(object):
             return "Access token was not valid", 403
 
         try:
+            if not _is_user_admin(access_token):
+                log.warning("Attempted maintenance mode state update from non admin user")
+                return "Unauthorized", 403
+        except Exception as error:
+            log.warning(f"A problem occurred while verifying if admin is user - {error}")
+            return "Unauthorized", 403
+        log.info("User is admin")
+
+        try:
             with open(MAINTENANCE_CONFIG_PATH, "w") as file:
                 json.dump(state, file)
             log.info("Maintenance mode state successfully updated")
@@ -78,6 +87,15 @@ class ScheduledMaintenanceMode(object):
             return "Access token was not valid", 403
 
         try:
+            if not _is_user_admin(access_token):
+                log.warning("Attempted scheduled maintenance mode state update from non admin user")
+                return "Unauthorized", 403
+        except Exception as error:
+            log.warning(f"A problem occurred while verifying if admin is user - {error}")
+            return "Unauthorized", 403
+        log.info("User is admin")
+
+        try:
             with open(SCHEDULED_MAINTENANCE_CONFIG_PATH, "w") as file:
                 json.dump(state, file)
             log.info("Scheduled maintenance mode state successfully updated")
@@ -99,3 +117,18 @@ def _verify_token(token):
             f"Token in blacklist: {token}")
         raise Exception("Token in blacklist")
     log.info("Token verified")
+
+
+def _is_user_admin(token):
+    """
+    Checks the token's payload to determine whether the user is admin or not.
+    :param token: the token to decode
+    :return: boolean value indicating whether the user is admin or not
+    """
+    log.info("Verifying if user is admin")
+    payload = jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
+    if 'userIsAdmin' not in payload:
+        log.warning("Payload missing admin information")
+        raise Exception("Payload missing admin information")
+
+    return payload['userIsAdmin']
