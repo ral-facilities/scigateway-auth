@@ -9,7 +9,7 @@
     "access_token_valid_for": 30,
     "refresh_token_valid_for": 10080,
     "blacklist": [],
-    "admin_users": []
+    "admin_users": [],
     "maintenance_config_path": "maintenance/maintenance.json",
     "scheduled_maintenance_config_path": "maintenance/scheduled_maintenance.json",
     "verify": true
