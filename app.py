@@ -7,7 +7,8 @@ if __name__ == "__main__":  # NOQA: E402
 
 from common.config import config
 from common.logger_setup import setup_logger
-from src.endpoints import LoginEndpoint, VerifyEndpoint, RefreshEndpoint, AuthenticatorsEndpoint  # NOQA: E402
+from src.endpoints import LoginEndpoint, VerifyEndpoint, RefreshEndpoint, AuthenticatorsEndpoint, \
+    MaintenanceEndpoint, ScheduledMaintenanceEndpoint  # NOQA: E402
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -19,6 +20,8 @@ api.add_resource(LoginEndpoint, "/login")
 api.add_resource(VerifyEndpoint, "/verify")
 api.add_resource(RefreshEndpoint, "/refresh")
 api.add_resource(AuthenticatorsEndpoint, "/authenticators")
+api.add_resource(MaintenanceEndpoint, "/maintenance")
+api.add_resource(ScheduledMaintenanceEndpoint, "/scheduled_maintenance")
 
 if __name__ == "__main__":
     app.run(host=config.get_host(), port=config.get_port(),

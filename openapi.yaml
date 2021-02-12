@@ -140,3 +140,110 @@ paths:
                 
         "500":
           description: When the call to ICAT fails
+
+  /maintenace:
+    get:
+      summary: Returns a JSON object that represents the maintenance mode state
+      responses:
+        "200":
+          description: The maintenance mode state in form of a JSON object
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - show
+                  - message
+                properties:
+                  show:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Sorry, we are down for scheduled maintenance
+        "500":
+          description: When maintenance mode state retrieval fails
+    put:
+      summary: Updates the maintenance mode state given an access token and a state
+      requestBody:
+        description: The access token and state to be used to verify the user and update the maintenance mode state with
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: xxxxx.yyyyy.zzzzz
+                maintenance:
+                  type: object
+                  properties:
+                    show:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: Sorry, we are down for scheduled maintenance.
+      responses:
+        "200":
+          description: When state update is successful
+        "400":
+          description: When the JSON data is invalid
+        "403":
+          description: When the access token is invalid or the user is not admin
+        "500":
+          description: When an error occurs while the JSON file is updated
+  /scheduled_maintenace:
+    get:
+      summary: Returns a JSON object that represents the scheduled maintenance mode state
+      responses:
+        "200":
+          description: The scheduled maintenance mode state in form of a JSON object
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - show
+                  - message
+                properties:
+                  show:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Maintenance scheduled for tomorrow at 12:00
+        "500":
+          description: When maintenance scheduled mode state retrieval fails
+    put:
+      summary: Updates the scheduled maintenance mode state given an access token and a state
+      requestBody:
+        description: The access token and state to be used to verify the user and update the scheduled maintenance mode state with
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: xxxxx.yyyyy.zzzzz
+                scheduled_maintenance:
+                  type: object
+                  properties:
+                    show:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: Maintenance scheduled for tomorrow at 13:00
+      responses:
+        "200":
+          description: When state update is successful
+        "400":
+          description: When the JSON data is invalid
+        "403":
+          description: When the access token is invalid or the user is not admin
+        "500":
+          description: When an error occurs while the JSON file is updated

@@ -51,7 +51,7 @@ class Config(object):
             return self.config["public_key_path"]
         except:
             sys.exit("Missing config value, public_key_path")
-            
+
     def get_access_token_valid_for(self):
         try:
             return self.config["access_token_valid_for"]
@@ -69,6 +69,24 @@ class Config(object):
             return self.config["blacklist"]
         except:
             sys.exit("Missing config value, blacklist")
+
+    def get_admin_users(self):
+        try:
+            return self.config["admin_users"]
+        except:
+            sys.exit("Missing config value, admin_users")
+
+    def get_maintenance_config_path(self):
+        try:
+            return self.config["maintenance_config_path"]
+        except:
+            sys.exit("Missing config value, maintenance_config_path")
+
+    def get_scheduled_maintenance_config_path(self):
+        try:
+            return self.config["scheduled_maintenance_config_path"]
+        except:
+            sys.exit("Missing config value, scheduled_maintenance_config_path")
 
     def get_verify(self):
         try:
