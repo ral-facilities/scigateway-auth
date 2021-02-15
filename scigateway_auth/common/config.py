@@ -40,6 +40,12 @@ class Config(object):
         except:
             sys.exit("Missing config value, log_level")
 
+    def get_log_location(self):
+        try:
+            return self.config["log_location"]
+        except:
+            sys.exit("Missing config value, log_location")
+
     def get_private_key_path(self):
         try:
             return self.config["private_key_path"]
