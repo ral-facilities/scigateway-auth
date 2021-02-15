@@ -1,7 +1,7 @@
 import datetime
 from unittest import TestCase, mock
 
-from src.auth import AuthenticationHandler
+from scigateway_auth.src.auth import AuthenticationHandler
 from test.testutils import PRIVATE_KEY, PUBLIC_KEY, REFRESHED_ACCESS_TOKEN, \
     REFRESHED_NON_ADMIN_ACCESS_TOKEN, VALID_ACCESS_TOKEN, EXPIRED_ACCESS_TOKEN, NEW_REFRESH_TOKEN, \
     VALID_REFRESH_TOKEN, EXPIRED_REFRESH_TOKEN
@@ -39,10 +39,10 @@ def mock_datetime_now(*args, **kwargs):
     return datetime.datetime(2020, 1, 8)
 
 
-@mock.patch("src.auth.ACCESS_TOKEN_VALID_FOR", 5)
-@mock.patch("src.auth.REFRESH_TOKEN_VALID_FOR", 10080)
-@mock.patch("src.auth.PRIVATE_KEY", PRIVATE_KEY)
-@mock.patch("src.auth.PUBLIC_KEY", PUBLIC_KEY)
+@mock.patch("scigateway_auth.src.auth.ACCESS_TOKEN_VALID_FOR", 5)
+@mock.patch("scigateway_auth.src.auth.REFRESH_TOKEN_VALID_FOR", 10080)
+@mock.patch("scigateway_auth.src.auth.PRIVATE_KEY", PRIVATE_KEY)
+@mock.patch("scigateway_auth.src.auth.PUBLIC_KEY", PUBLIC_KEY)
 class TestAuthenticationHandler(TestCase):
     def setUp(self):
         self.handler = AuthenticationHandler()
@@ -64,8 +64,8 @@ class TestAuthenticationHandler(TestCase):
 
     @mock.patch("requests.post", side_effect=mock_post_requests)
     @mock.patch("requests.get", side_effect=mock_get_requests)
-    @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
-    @mock.patch("src.auth.ADMIN_USERS", ['test name'])
+    @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
+    @mock.patch("scigateway_auth.src.auth.ADMIN_USERS", ['test name'])
     def test_get_access_token_admin_user(self, mock_post, mock_get, mock_now):
         self.handler.set_mnemonic("anon")
         token = self.handler.get_access_token()
@@ -74,7 +74,7 @@ class TestAuthenticationHandler(TestCase):
 
     @mock.patch("requests.post", side_effect=mock_post_requests)
     @mock.patch("requests.get", side_effect=mock_get_requests)
-    @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
+    @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
     def test_get_access_token_non_admin_user(self, mock_post, mock_get, mock_now):
         self.handler.set_mnemonic("anon")
         token = self.handler.get_access_token()
@@ -91,14 +91,14 @@ class TestAuthenticationHandler(TestCase):
         result = self.handler.verify_token(token)
         self.assertEqual(result, ("Unauthorized", 403))
 
-    @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
+    @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
     def test_get_refresh_token(self, mock_now):
         token = self.handler.get_refresh_token()
         expected_token = NEW_REFRESH_TOKEN
         self.assertEqual(token, expected_token)
 
     @mock.patch("requests.put", side_effect=mock_session_put_request_success)
-    @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
+    @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
     def test_refresh_token_success(self, mock_put, mock_now):
         refresh_token = VALID_REFRESH_TOKEN
         access_token = EXPIRED_ACCESS_TOKEN
@@ -112,7 +112,7 @@ class TestAuthenticationHandler(TestCase):
         result = self.handler.refresh_token(refresh_token, access_token)
         self.assertEqual(result, ("Refresh token was not valid", 403))
 
-    @mock.patch("src.auth.BLACKLIST", [VALID_REFRESH_TOKEN])
+    @mock.patch("scigateway_auth.src.auth.BLACKLIST", [VALID_REFRESH_TOKEN])
     def test_refresh_token_error_blacklisted_refresh_token(self):
         refresh_token = VALID_REFRESH_TOKEN
         access_token = REFRESHED_ACCESS_TOKEN
@@ -120,7 +120,7 @@ class TestAuthenticationHandler(TestCase):
         self.assertEqual(result, ("Refresh token was not valid", 403))
 
     @mock.patch("requests.put", side_effect=mock_session_put_request_failure)
-    @mock.patch("src.auth.current_time", side_effect=mock_datetime_now)
+    @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
     def test_refresh_token_error_access_token_refresh_failure(self, mock_put, mock_now):
         refresh_token = VALID_REFRESH_TOKEN
         access_token = REFRESHED_ACCESS_TOKEN

@@ -1,7 +1,7 @@
 import logging.config
 from pathlib import Path
 
-from common.config import config
+from scigateway_auth.common.config import config
 
 log_level = "DEBUG"
 LOG_FILE_NAME = Path(__file__).parent.parent / "logs.log"

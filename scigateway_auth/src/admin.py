@@ -2,7 +2,7 @@ import logging
 import json
 import jwt
 
-from common.constants import PUBLIC_KEY, BLACKLIST, MAINTENANCE_CONFIG_PATH, \
+from scigateway_auth.common.constants import PUBLIC_KEY, BLACKLIST, MAINTENANCE_CONFIG_PATH, \
     SCHEDULED_MAINTENANCE_CONFIG_PATH
 
 log = logging.getLogger()
