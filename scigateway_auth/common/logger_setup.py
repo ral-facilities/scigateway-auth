@@ -3,8 +3,6 @@ from pathlib import Path
 
 from scigateway_auth.common.config import config
 
-log_level = "DEBUG"
-LOG_FILE_NAME = Path(__file__).parent.parent / "logs.log"
 logger_config = {
     "version": 1,
     "formatters": {"default": {
@@ -14,7 +12,7 @@ logger_config = {
         "level": config.get_log_level(),
         "formatter": "default",
         "class": "logging.handlers.RotatingFileHandler",
-        "filename": LOG_FILE_NAME,
+        "filename": config.get_log_location(),
         "maxBytes": 5000000,
         "backupCount": 10
     }},
