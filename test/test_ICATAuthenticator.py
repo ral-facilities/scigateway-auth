@@ -2,8 +2,8 @@ from unittest import TestCase, mock
 
 import requests
 
-from common.exceptions import AuthenticationError
-from src.auth import ICATAuthenticator
+from scigateway_auth.common.exceptions import AuthenticationError
+from scigateway_auth.src.auth import ICATAuthenticator
 
 
 class MockResponse(object):

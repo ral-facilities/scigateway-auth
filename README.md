@@ -35,19 +35,20 @@ The project consists of 3 main packages, and app.py. The config, constants and e
 ```
 ─── scigateway-auth
     ├── app.py
-    ├── common
-    │   ├── config.py
-    │   ├── constants.py
-    │   ├── exceptions.py
-    │   └── logger_setup.py
-    ├── src
-    │   ├── auth.py
-    │   └── endpoints.py
-    │── test
+    ├── scigateway_auth
+    │   ├── common
+    │   │   ├── config.py
+    │   │   ├── constants.py
+    │   │   ├── exceptions.py
+    │   │   └── logger_setup.py
+    │   ├── src
+    │   │   ├── auth.py
+    │   │   └── endpoints.py
+    │   └── config.json
+    ├── test
     │   ├── test_authenticationHandler.py
     │   ├── test_ICATAuthenticator.py
     │   └── test_requires_mnemonic.py
-    ├── config.json
     ├── logs.log
     ├── openapi.yaml
     ├── README.md

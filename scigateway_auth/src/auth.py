@@ -6,9 +6,9 @@ from functools import wraps
 import jwt
 import requests
 
-from common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, \
+from scigateway_auth.common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, \
     REFRESH_TOKEN_VALID_FOR, VERIFY, ADMIN_USERS
-from common.exceptions import MissingMnemonicError, AuthenticationError
+from scigateway_auth.common.exceptions import MissingMnemonicError, AuthenticationError
 
 import datetime
 

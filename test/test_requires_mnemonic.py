@@ -1,8 +1,8 @@
 from unittest import TestCase
 import logging
 
-from common.exceptions import MissingMnemonicError, AuthenticationError
-from src.auth import requires_mnemonic
+from scigateway_auth.common.exceptions import MissingMnemonicError, AuthenticationError
+from scigateway_auth.src.auth import requires_mnemonic
 
 
 class TestRequires_mnemonic(TestCase):

@@ -5,10 +5,10 @@ from flask import request
 from flask_restful import Resource
 from jsonschema.exceptions import ValidationError
 
-from common.constants import SECURE
-from common.exceptions import MissingMnemonicError
-from src.admin import MaintenanceMode, ScheduledMaintenanceMode
-from src.auth import AuthenticationHandler, requires_mnemonic
+from scigateway_auth.common.constants import SECURE
+from scigateway_auth.common.exceptions import MissingMnemonicError
+from scigateway_auth.src.admin import MaintenanceMode, ScheduledMaintenanceMode
+from scigateway_auth.src.auth import AuthenticationHandler, requires_mnemonic
 
 log = logging.getLogger()
 

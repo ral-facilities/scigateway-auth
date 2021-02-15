@@ -1,4 +1,4 @@
-from common.config import config
+from scigateway_auth.common.config import config
 
 with open(config.get_private_key_path(), "r") as f:
     PRIVATE_KEY = f.read()

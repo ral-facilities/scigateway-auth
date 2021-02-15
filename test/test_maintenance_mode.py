@@ -1,15 +1,15 @@
 import json
 from unittest import TestCase, mock
 
-from src import admin
-from src.admin import MaintenanceMode
+from scigateway_auth.src import admin
+from scigateway_auth.src.admin import MaintenanceMode
 from test.testutils import PUBLIC_KEY, MAINTENANCE_CONFIG_PATH, MAINTENANCE_STATE, \
     VALID_ACCESS_TOKEN, INVALID_ACCESS_TOKEN, EXPIRED_ACCESS_TOKEN, VALID_NON_ADMIN_ACCESS_TOKEN, \
     ACCESS_TOKEN_WITHOUT_ADMIN_INFO
 
 
-@mock.patch("src.admin.PUBLIC_KEY", PUBLIC_KEY)
-@mock.patch("src.admin.MAINTENANCE_CONFIG_PATH", MAINTENANCE_CONFIG_PATH)
+@mock.patch("scigateway_auth.src.admin.PUBLIC_KEY", PUBLIC_KEY)
+@mock.patch("scigateway_auth.src.admin.MAINTENANCE_CONFIG_PATH", MAINTENANCE_CONFIG_PATH)
 class TestMaintenanceMode(TestCase):
     def setUp(self):
         self.maintenance_mode = MaintenanceMode()
@@ -36,7 +36,7 @@ class TestMaintenanceMode(TestCase):
         result = self.maintenance_mode.set_state(EXPIRED_ACCESS_TOKEN, MAINTENANCE_STATE)
         self.assertEqual(result, ("Access token was not valid", 403))
 
-    @mock.patch("src.admin.BLACKLIST", [VALID_ACCESS_TOKEN])
+    @mock.patch("scigateway_auth.src.admin.BLACKLIST", [VALID_ACCESS_TOKEN])
     def test_set_state_blacklisted_token(self):
         result = self.maintenance_mode.set_state(VALID_ACCESS_TOKEN, MAINTENANCE_STATE)
         self.assertEqual(result, ("Access token was not valid", 403))

@@ -1,8 +1,8 @@
 import json
 from unittest import TestCase, mock
 
-from src import admin
-from src.admin import ScheduledMaintenanceMode
+from scigateway_auth.src import admin
+from scigateway_auth.src.admin import ScheduledMaintenanceMode
 from test.testutils import PUBLIC_KEY, MAINTENANCE_STATE, MAINTENANCE_CONFIG_PATH, \
     VALID_ACCESS_TOKEN, INVALID_ACCESS_TOKEN, EXPIRED_ACCESS_TOKEN, VALID_NON_ADMIN_ACCESS_TOKEN, \
     ACCESS_TOKEN_WITHOUT_ADMIN_INFO
@@ -11,8 +11,8 @@ SCHEDULED_MAINTENANCE_STATE = MAINTENANCE_STATE
 SCHEDULED_MAINTENANCE_CONFIG_PATH = MAINTENANCE_CONFIG_PATH
 
 
-@mock.patch("src.admin.PUBLIC_KEY", PUBLIC_KEY)
-@mock.patch("src.admin.SCHEDULED_MAINTENANCE_CONFIG_PATH", SCHEDULED_MAINTENANCE_CONFIG_PATH)
+@mock.patch("scigateway_auth.src.admin.PUBLIC_KEY", PUBLIC_KEY)
+@mock.patch("scigateway_auth.src.admin.SCHEDULED_MAINTENANCE_CONFIG_PATH", SCHEDULED_MAINTENANCE_CONFIG_PATH)
 class TestScheduledMaintenanceMode(TestCase):
     def setUp(self):
         self.scheduled_maintenance_mode = ScheduledMaintenanceMode()
@@ -42,7 +42,7 @@ class TestScheduledMaintenanceMode(TestCase):
                                                            SCHEDULED_MAINTENANCE_STATE)
         self.assertEqual(result, ("Access token was not valid", 403))
 
-    @mock.patch("src.admin.BLACKLIST", [VALID_ACCESS_TOKEN])
+    @mock.patch("scigateway_auth.src.admin.BLACKLIST", [VALID_ACCESS_TOKEN])
     def test_set_state_blacklisted_token(self):
         result = self.scheduled_maintenance_mode.set_state(VALID_ACCESS_TOKEN,
                                                            SCHEDULED_MAINTENANCE_STATE)

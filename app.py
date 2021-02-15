@@ -2,12 +2,12 @@ from flask import Flask
 from flask_restful import Api
 
 if __name__ == "__main__":  # NOQA: E402
-    from common import constants
+    from scigateway_auth.common import constants
     constants.SECURE = False
 
-from common.config import config
-from common.logger_setup import setup_logger
-from src.endpoints import LoginEndpoint, VerifyEndpoint, RefreshEndpoint, AuthenticatorsEndpoint, \
+from scigateway_auth.common.config import config
+from scigateway_auth.common.logger_setup import setup_logger
+from scigateway_auth.src.endpoints import LoginEndpoint, VerifyEndpoint, RefreshEndpoint, AuthenticatorsEndpoint, \
     MaintenanceEndpoint, ScheduledMaintenanceEndpoint  # NOQA: E402
 
 app = Flask(__name__)
