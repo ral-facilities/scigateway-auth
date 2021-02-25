@@ -178,7 +178,7 @@ class MaintenanceEndpoint(Endpoint):
 class ScheduledMaintenanceEndpoint(Endpoint):
     """
     Subclass of Endpoint to give the /scheduled_maintenance endpoint a method to extract the token
-    and scheduled_maintenance from the JSON in the PUT body.
+    and scheduledMaintenance from the JSON in the PUT body.
     """
 
     def get(self):
@@ -210,7 +210,7 @@ class ScheduledMaintenanceEndpoint(Endpoint):
                 "token": {
                     "type": "string"
                 },
-                "scheduled_maintenance": {
+                "scheduledMaintenance": {
                     "type": "object",
                     "properties": {
                         "show": {
@@ -228,7 +228,7 @@ class ScheduledMaintenanceEndpoint(Endpoint):
             },
             "required": [
                 "token",
-                "scheduled_maintenance"
+                "scheduledMaintenance"
             ]
         }
         data = request.json
@@ -239,4 +239,4 @@ class ScheduledMaintenanceEndpoint(Endpoint):
             return error.message, 400
 
         return self.scheduled_maintenance_mode.set_state(data['token'],
-                                                         data['scheduled_maintenance'])
+                                                         data['scheduledMaintenance'])

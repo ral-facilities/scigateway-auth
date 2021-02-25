@@ -229,7 +229,7 @@ paths:
                 token:
                   type: string
                   example: xxxxx.yyyyy.zzzzz
-                scheduled_maintenance:
+                scheduledMaintenance:
                   type: object
                   properties:
                     show:
