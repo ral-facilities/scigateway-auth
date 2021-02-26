@@ -2,9 +2,17 @@ import datetime
 from unittest import TestCase, mock
 
 from scigateway_auth.src.auth import AuthenticationHandler
-from test.testutils import PRIVATE_KEY, PUBLIC_KEY, REFRESHED_ACCESS_TOKEN, \
-    REFRESHED_NON_ADMIN_ACCESS_TOKEN, VALID_ACCESS_TOKEN, EXPIRED_ACCESS_TOKEN, NEW_REFRESH_TOKEN, \
-    VALID_REFRESH_TOKEN, EXPIRED_REFRESH_TOKEN
+from test.testutils import (
+    PRIVATE_KEY,
+    PUBLIC_KEY,
+    REFRESHED_ACCESS_TOKEN,
+    REFRESHED_NON_ADMIN_ACCESS_TOKEN,
+    VALID_ACCESS_TOKEN,
+    EXPIRED_ACCESS_TOKEN,
+    NEW_REFRESH_TOKEN,
+    VALID_REFRESH_TOKEN,
+    EXPIRED_REFRESH_TOKEN,
+)
 
 
 class MockResponse(object):
@@ -29,10 +37,14 @@ def mock_session_put_request_success(*args, **kwargs):
 
 
 def mock_session_put_request_failure(*args, **kwargs):
-    return MockResponse({"code": "SESSION",
-                         "message": "Unable to find user by sessionid: "
-                                    "b764cb14-aba7-4ce1-a90e-74074dd3fe42"},
-                        403)
+    return MockResponse(
+        {
+            "code": "SESSION",
+            "message": "Unable to find user by sessionid: "
+            "b764cb14-aba7-4ce1-a90e-74074dd3fe42",
+        },
+        403,
+    )
 
 
 def mock_datetime_now(*args, **kwargs):
@@ -49,23 +61,25 @@ class TestAuthenticationHandler(TestCase):
 
     def test__pack_jwt(self):
         token = self.handler._pack_jwt({"test": "test"})
-        expected_token = ("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ0ZXN0IjoidGV"
-                          "zdCJ9.aCqysXBRNgBakmUa3NCksATw_CsNYkLU_AQoDl3DYTCFaIpEjJGzw-qfKkydLnQa"
-                          "MK01WHdWqMrx9lft9RWSCGstNJAS1QzyVTNRcvIYGFo4GaCU8mtDuP94kCpWK-VXZmXmIg"
-                          "z5pTszMfRs0vmfWQIahHrDbGfY_h36BycMgUwZH9VE1OeX0KaMmQHjIaG0-dUUEDO0XqSh"
-                          "Rny6Ml2qdhQ0bE3oxM4pC8HCgb-sMQXdSImun1X4lSetRdjOcdJVDJZkV8eiN9xda9VYRn"
-                          "lWZSmAR4j8IiF5sE9It5x-snSDwnAUfm_kfiPYROeUuZQNBv0db9B1GFdT9sFeoZjs6eap"
-                          "nhWHwEMhVJVp7OkmSkDFimyPyXNGNq8LRY6UxonyWfzjHLvBvYSfZJBC4yye5zetj-Pc8u"
-                          "frKrU7wXiHtkXiwxKk0rCQBe6LEvS8AGmNTZFa3olLEyzb_VgLSaFHDdSogFXAaDnBHWMc"
-                          "Mr-77c35m6iW2WB2-FreedL5tbKw1MM51S0WFe9lVeGzsYx5fxG048iIuusLXg0AyORIVA"
-                          "Q-2LDK1fX3VmKVULMOJdCsPIhwK8W9HUKPWlSqBEeITkEDkohCxGHHL2iOFQS52PGGfMzx"
-                          "9ix8pa_MzPtC0MR1LfxnGNi8F5PUAE34yRi7ha3yA5J2ocMLeVl9lQ7M6ms")
+        expected_token = (
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ0ZXN0IjoidGV"
+            "zdCJ9.aCqysXBRNgBakmUa3NCksATw_CsNYkLU_AQoDl3DYTCFaIpEjJGzw-qfKkydLnQa"
+            "MK01WHdWqMrx9lft9RWSCGstNJAS1QzyVTNRcvIYGFo4GaCU8mtDuP94kCpWK-VXZmXmIg"
+            "z5pTszMfRs0vmfWQIahHrDbGfY_h36BycMgUwZH9VE1OeX0KaMmQHjIaG0-dUUEDO0XqSh"
+            "Rny6Ml2qdhQ0bE3oxM4pC8HCgb-sMQXdSImun1X4lSetRdjOcdJVDJZkV8eiN9xda9VYRn"
+            "lWZSmAR4j8IiF5sE9It5x-snSDwnAUfm_kfiPYROeUuZQNBv0db9B1GFdT9sFeoZjs6eap"
+            "nhWHwEMhVJVp7OkmSkDFimyPyXNGNq8LRY6UxonyWfzjHLvBvYSfZJBC4yye5zetj-Pc8u"
+            "frKrU7wXiHtkXiwxKk0rCQBe6LEvS8AGmNTZFa3olLEyzb_VgLSaFHDdSogFXAaDnBHWMc"
+            "Mr-77c35m6iW2WB2-FreedL5tbKw1MM51S0WFe9lVeGzsYx5fxG048iIuusLXg0AyORIVA"
+            "Q-2LDK1fX3VmKVULMOJdCsPIhwK8W9HUKPWlSqBEeITkEDkohCxGHHL2iOFQS52PGGfMzx"
+            "9ix8pa_MzPtC0MR1LfxnGNi8F5PUAE34yRi7ha3yA5J2ocMLeVl9lQ7M6ms"
+        )
         self.assertEqual(token, expected_token)
 
     @mock.patch("requests.post", side_effect=mock_post_requests)
     @mock.patch("requests.get", side_effect=mock_get_requests)
     @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
-    @mock.patch("scigateway_auth.src.auth.ADMIN_USERS", ['test name'])
+    @mock.patch("scigateway_auth.src.auth.ADMIN_USERS", ["test name"])
     def test_get_access_token_admin_user(self, mock_post, mock_get, mock_now):
         self.handler.set_mnemonic("anon")
         token = self.handler.get_access_token()

@@ -8,3 +8,7 @@ keys/
 build/
 dist/
 *.egg-info/
+.python-version
+.nox/
+.coverage
+coverage.xml

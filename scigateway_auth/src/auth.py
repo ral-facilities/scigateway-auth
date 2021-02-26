@@ -6,8 +6,16 @@ from functools import wraps
 import jwt
 import requests
 
-from scigateway_auth.common.constants import PRIVATE_KEY, PUBLIC_KEY, ICAT_URL, BLACKLIST, ACCESS_TOKEN_VALID_FOR, \
-    REFRESH_TOKEN_VALID_FOR, VERIFY, ADMIN_USERS
+from scigateway_auth.common.constants import (
+    PRIVATE_KEY,
+    PUBLIC_KEY,
+    ICAT_URL,
+    BLACKLIST,
+    ACCESS_TOKEN_VALID_FOR,
+    REFRESH_TOKEN_VALID_FOR,
+    VERIFY,
+    ADMIN_USERS,
+)
 from scigateway_auth.common.exceptions import MissingMnemonicError, AuthenticationError
 
 import datetime
@@ -28,12 +36,13 @@ class ICATAuthenticator(object):
         :param credentials: The credentials to authenticate with
         :return: The session id
         """
-        log.info(
-            f"Authenticating at {ICAT_URL} with mnemonic: {mnemonic}")
-        data = {"json": json.dumps({"plugin": "anon"})} if credentials is None else {
-            "json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
-        response = requests.post(
-            f"{ICAT_URL}/session", data=data, verify=VERIFY)
+        log.info(f"Authenticating at {ICAT_URL} with mnemonic: {mnemonic}")
+        data = (
+            {"json": json.dumps({"plugin": "anon"})}
+            if credentials is None
+            else {"json": json.dumps({"plugin": mnemonic, "credentials": credentials})}
+        )
+        response = requests.post(f"{ICAT_URL}/session", data=data, verify=VERIFY)
         if response.status_code is 200:
             return response.json()["sessionId"]
         else:
@@ -45,8 +54,7 @@ class ICATAuthenticator(object):
         :param session_id: The session id of the user who we want to get info for
         :return: The user's username
         """
-        log.info(
-            f"Retrieving username for session id {session_id} at {ICAT_URL}")
+        log.info(f"Retrieving username for session id {session_id} at {ICAT_URL}")
         response = requests.get(f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
         if response.status_code is 200:
             return response.json()["userName"]
@@ -59,8 +67,7 @@ class ICATAuthenticator(object):
         authenticators
         :return: The list of ICAT authenticator mnemonics and their friendly names
         """
-        log.info(
-            f"Querying ICAT at {ICAT_URL} to get its list of mnemonics")
+        log.info(f"Querying ICAT at {ICAT_URL} to get its list of mnemonics")
         response = requests.get(f"{ICAT_URL}/properties", verify=VERIFY)
         properties = response.json()
         return properties["authenticators"]
@@ -70,13 +77,10 @@ class ICATAuthenticator(object):
         Sends an refresh session_id request to ICAT
         :param session_id: The session ID to refresh
         """
-        log.info(
-            f"Refreshing session ID {session_id} at {ICAT_URL}")
-        response = requests.put(
-            f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
+        log.info(f"Refreshing session ID {session_id} at {ICAT_URL}")
+        response = requests.put(f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
         if response.status_code != 204:
-            raise AuthenticationError(
-                "The session ID was unable to be refreshed")
+            raise AuthenticationError("The session ID was unable to be refreshed")
 
 
 class AuthenticationHandler(object):
@@ -107,13 +111,14 @@ class AuthenticationHandler(object):
         log.info("Creating ICATAuthenticator")
         authenticator = ICATAuthenticator()
         session_id = authenticator.authenticate(
-            self.mnemonic, credentials=self.credentials)
+            self.mnemonic, credentials=self.credentials
+        )
         username = authenticator.get_username(session_id)
         user_is_admin = username in ADMIN_USERS
         return {
             "sessionId": session_id,
             "username": username,
-            "userIsAdmin": user_is_admin
+            "userIsAdmin": user_is_admin,
         }
 
     def _pack_jwt(self, dictionary):
@@ -133,8 +138,9 @@ class AuthenticationHandler(object):
         :return: The access JWT
         """
         payload = self._get_payload()
-        payload['exp'] = current_time(
-        ) + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR)
+        payload["exp"] = current_time() + datetime.timedelta(
+            minutes=ACCESS_TOKEN_VALID_FOR
+        )
         return self._pack_jwt(payload)
 
     def get_refresh_token(self):
@@ -143,7 +149,11 @@ class AuthenticationHandler(object):
         :return: The refresh JWT
         """
         return self._pack_jwt(
-            {'exp': current_time() + datetime.timedelta(minutes=REFRESH_TOKEN_VALID_FOR)})
+            {
+                "exp": current_time()
+                + datetime.timedelta(minutes=REFRESH_TOKEN_VALID_FOR)
+            }
+        )
 
     def verify_token(self, token):
         """
@@ -173,7 +183,8 @@ class AuthenticationHandler(object):
             jwt.decode(refresh_token, PUBLIC_KEY, algorithms=["RS256"])
             if refresh_token in BLACKLIST:
                 log.warning(
-                    f"Attempted refresh from token in blacklist: {refresh_token}")
+                    f"Attempted refresh from token in blacklist: {refresh_token}"
+                )
                 raise Exception("JWT in blacklist")
             log.info("Token verified")
         except:
@@ -181,10 +192,15 @@ class AuthenticationHandler(object):
             return "Refresh token was not valid", 403
 
         try:
-            payload = jwt.decode(prev_access_token, PUBLIC_KEY, algorithms=[
-                "RS256"], options={'verify_exp': False})
-            payload['exp'] = (current_time()
-                              + datetime.timedelta(minutes=ACCESS_TOKEN_VALID_FOR))
+            payload = jwt.decode(
+                prev_access_token,
+                PUBLIC_KEY,
+                algorithms=["RS256"],
+                options={"verify_exp": False},
+            )
+            payload["exp"] = current_time() + datetime.timedelta(
+                minutes=ACCESS_TOKEN_VALID_FOR
+            )
 
             log.info("Creating ICATAuthenticator")
             authenticator = ICATAuthenticator()

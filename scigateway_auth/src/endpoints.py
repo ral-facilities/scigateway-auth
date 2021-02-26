@@ -58,8 +58,7 @@ class LoginEndpoint(Endpoint):
             raise MissingMnemonicError("No mnemonic")
         try:
             log.info("Attempting to get credentials from post body")
-            credentials = [{key: value}
-                           for key, value in data["credentials"].items()]
+            credentials = [{key: value} for key, value in data["credentials"].items()]
 
             self.auth_handler.set_credentials(credentials)
         except KeyError:
@@ -74,9 +73,14 @@ class LoginEndpoint(Endpoint):
         :return: The JWT
         """
         self.get_credentials_from_post_body()
-        return self.auth_handler.get_access_token(), 200, {
-            'Set-Cookie': f'scigateway:refresh_token={self.auth_handler.get_refresh_token()}; '
-                          f'Max-Age=604800; {"Secure;" if SECURE else ""}HttpOnly; SameSite=Lax'}
+        return (
+            self.auth_handler.get_access_token(),
+            200,
+            {
+                "Set-Cookie": f"scigateway:refresh_token={self.auth_handler.get_refresh_token()}; "
+                f'Max-Age=604800; {"Secure;" if SECURE else ""}HttpOnly; SameSite=Lax'
+            },
+        )
 
 
 class VerifyEndpoint(Endpoint):
@@ -141,29 +145,17 @@ class MaintenanceEndpoint(Endpoint):
         put_schema = {
             "type": "object",
             "properties": {
-                "token": {
-                    "type": "string"
-                },
+                "token": {"type": "string"},
                 "maintenance": {
                     "type": "object",
                     "properties": {
-                        "show": {
-                            "type": "boolean"
-                        },
-                        "message": {
-                            "type": "string"
-                        }
+                        "show": {"type": "boolean"},
+                        "message": {"type": "string"},
                     },
-                    "required": [
-                        "show",
-                        "message"
-                    ]
-                }
+                    "required": ["show", "message"],
+                },
             },
-            "required": [
-                "token",
-                "maintenance"
-            ]
+            "required": ["token", "maintenance"],
         }
         data = request.json
         try:
@@ -172,7 +164,7 @@ class MaintenanceEndpoint(Endpoint):
             log.info(error)
             return error.message, 400
 
-        return self.maintenance_mode.set_state(data['token'], data['maintenance'])
+        return self.maintenance_mode.set_state(data["token"], data["maintenance"])
 
 
 class ScheduledMaintenanceEndpoint(Endpoint):
@@ -207,29 +199,17 @@ class ScheduledMaintenanceEndpoint(Endpoint):
         put_schema = {
             "type": "object",
             "properties": {
-                "token": {
-                    "type": "string"
-                },
+                "token": {"type": "string"},
                 "scheduledMaintenance": {
                     "type": "object",
                     "properties": {
-                        "show": {
-                            "type": "boolean"
-                        },
-                        "message": {
-                            "type": "string"
-                        }
+                        "show": {"type": "boolean"},
+                        "message": {"type": "string"},
                     },
-                    "required": [
-                        "show",
-                        "message"
-                    ]
-                }
+                    "required": ["show", "message"],
+                },
             },
-            "required": [
-                "token",
-                "scheduledMaintenance"
-            ]
+            "required": ["token", "scheduledMaintenance"],
         }
         data = request.json
         try:
@@ -238,5 +218,6 @@ class ScheduledMaintenanceEndpoint(Endpoint):
             log.info(error)
             return error.message, 400
 
-        return self.scheduled_maintenance_mode.set_state(data['token'],
-                                                         data['scheduledMaintenance'])
+        return self.scheduled_maintenance_mode.set_state(
+            data["token"], data["scheduledMaintenance"]
+        )

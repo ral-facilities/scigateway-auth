@@ -2,8 +2,12 @@ import logging
 import json
 import jwt
 
-from scigateway_auth.common.constants import PUBLIC_KEY, BLACKLIST, MAINTENANCE_CONFIG_PATH, \
-    SCHEDULED_MAINTENANCE_CONFIG_PATH
+from scigateway_auth.common.constants import (
+    PUBLIC_KEY,
+    BLACKLIST,
+    MAINTENANCE_CONFIG_PATH,
+    SCHEDULED_MAINTENANCE_CONFIG_PATH,
+)
 
 log = logging.getLogger()
 
@@ -39,10 +43,14 @@ class MaintenanceMode(object):
 
         try:
             if not _is_user_admin(access_token):
-                log.warning("Attempted maintenance mode state update from non admin user")
+                log.warning(
+                    "Attempted maintenance mode state update from non admin user"
+                )
                 return "Unauthorized", 403
         except Exception as error:
-            log.warning(f"A problem occurred while verifying if admin is user - {error}")
+            log.warning(
+                f"A problem occurred while verifying if admin is user - {error}"
+            )
             return "Unauthorized", 403
         log.info("User is admin")
 
@@ -88,10 +96,14 @@ class ScheduledMaintenanceMode(object):
 
         try:
             if not _is_user_admin(access_token):
-                log.warning("Attempted scheduled maintenance mode state update from non admin user")
+                log.warning(
+                    "Attempted scheduled maintenance mode state update from non admin user"
+                )
                 return "Unauthorized", 403
         except Exception as error:
-            log.warning(f"A problem occurred while verifying if admin is user - {error}")
+            log.warning(
+                f"A problem occurred while verifying if admin is user - {error}"
+            )
             return "Unauthorized", 403
         log.info("User is admin")
 
@@ -113,8 +125,7 @@ def _verify_token(token):
     log.info("Verifying token")
     jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
     if token in BLACKLIST:
-        log.warning(
-            f"Token in blacklist: {token}")
+        log.warning(f"Token in blacklist: {token}")
         raise Exception("Token in blacklist")
     log.info("Token verified")
 
@@ -127,8 +138,8 @@ def _is_user_admin(token):
     """
     log.info("Verifying if user is admin")
     payload = jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
-    if 'userIsAdmin' not in payload:
+    if "userIsAdmin" not in payload:
         log.warning("Payload missing admin information")
         raise Exception("Payload missing admin information")
 
-    return payload['userIsAdmin']
+    return payload["userIsAdmin"]

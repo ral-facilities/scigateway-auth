@@ -20,20 +20,29 @@ def mock_successful_icat_new_session_request(*args, **kwargs):
 
 
 def mock_unsuccessful_icat_new_session_request(*args, **kwargs):
-    return MockResponse({"code": "SESSION", "message": "Error logging in. Please try again later"}, 400)
+    return MockResponse(
+        {"code": "SESSION", "message": "Error logging in. Please try again later"}, 400
+    )
+
 
 def mock_successful_icat_session_get_request(*args, **kwargs):
     return MockResponse({"userName": "test name", "remainingMinutes": 60}, 200)
 
+
 def mock_unsuccessful_icat_session_get_request(*args, **kwargs):
-    return MockResponse({"code": "SESSION", "message": "Unable to find user by sessionid: test"}, 400)
+    return MockResponse(
+        {"code": "SESSION", "message": "Unable to find user by sessionid: test"}, 400
+    )
+
 
 def mock_successful_icat_refresh_session_request(*args, **kwargs):
     return MockResponse("", 204)
 
 
 def mock_unsuccessful_icat_refresh_session_request(*args, **kwargs):
-    return MockResponse({"code": "SESSION", "message": "Unable to find user by sessionid: x"}, 403)
+    return MockResponse(
+        {"code": "SESSION", "message": "Unable to find user by sessionid: x"}, 403
+    )
 
 
 def mock_successful_icat_properties_request(*args, **kwargs):
@@ -48,30 +57,37 @@ class TestICATAuthenticator(TestCase):
     def setUp(self):
         self.authenticator = ICATAuthenticator()
 
-    @mock.patch("requests.put", side_effect=mock_successful_icat_refresh_session_request)
+    @mock.patch(
+        "requests.put", side_effect=mock_successful_icat_refresh_session_request
+    )
     def test_refresh_success(self, mock_get):
         result = self.authenticator.refresh("valid session id")
         self.assertIsNone(result)
 
-    @mock.patch("requests.put", side_effect=mock_unsuccessful_icat_refresh_session_request)
+    @mock.patch(
+        "requests.put", side_effect=mock_unsuccessful_icat_refresh_session_request
+    )
     def test_refresh_failure(self, mock_get):
         with self.assertRaises(AuthenticationError) as ctx:
             self.authenticator.refresh("invalid session id")
         self.assertEqual(
-            "The session ID was unable to be refreshed", str(ctx.exception))
+            "The session ID was unable to be refreshed", str(ctx.exception)
+        )
 
     @mock.patch("requests.post", side_effect=mock_successful_icat_new_session_request)
     def test_authenticate_with_good_response(self, mock_post):
-        result = self.authenticator.authenticate("test", {"username": "valid", "password": "credentials"})
+        result = self.authenticator.authenticate(
+            "test", {"username": "valid", "password": "credentials"}
+        )
         self.assertEqual(result, "test")
 
     @mock.patch("requests.post", side_effect=mock_unsuccessful_icat_new_session_request)
     def test_authenticate_with_bad_response(self, mock_post):
         with self.assertRaises(AuthenticationError) as ctx:
             self.authenticator.authenticate(
-                "test", {"username": "valid", "password": "credentials"})
-        self.assertEqual(
-            "Error logging in. Please try again later", str(ctx.exception))
+                "test", {"username": "valid", "password": "credentials"}
+            )
+        self.assertEqual("Error logging in. Please try again later", str(ctx.exception))
 
     @mock.patch("requests.get", side_effect=mock_successful_icat_session_get_request)
     def test_get_username_with_good_response(self, mock_post):
