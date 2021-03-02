@@ -33,9 +33,9 @@ jobs:
       run: touch logs.log
     - name: Configure log file location
       run: echo "`jq -r --arg REPO_DIR "$GITHUB_WORKSPACE/logs.log" \
-        '.log_location=$REPO_DIR' scigateway-auth/scigateway_auth/config.json.example`" > scigateway-auth/scigateway_auth/config.json.example
+        '.log_location=$REPO_DIR' scigateway_auth/config.json.example`" > scigateway_auth/config.json.example
     - name: Create config.json
-      run: cp scigateway-auth/scigateway_auth/config.json.example scigateway-auth/scigateway_auth/config.json
+      run: cp sscigateway_auth/config.json.example scigateway_auth/config.json
 
     # Install Nox, Poetry and API's dependencies
     - name: Install Nox
@@ -43,7 +43,7 @@ jobs:
     - name: Install Poetry
       run: pip install poetry==1.1.4
     - name: Install dependencies
-      run: cd scigateway-auth/ && poetry install
+      run: poetry install
 
     # Run Nox tests session, saves and uploads a coverage report to codecov
     - name: Run Nox tests session
