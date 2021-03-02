@@ -35,7 +35,7 @@ jobs:
       run: echo "`jq -r --arg REPO_DIR "$GITHUB_WORKSPACE/logs.log" \
         '.log_location=$REPO_DIR' scigateway_auth/config.json.example`" > scigateway_auth/config.json.example
     - name: Create config.json
-      run: cp sscigateway_auth/config.json.example scigateway_auth/config.json
+      run: cp scigateway_auth/config.json.example scigateway_auth/config.json
 
     # Install Nox, Poetry and API's dependencies
     - name: Install Nox
