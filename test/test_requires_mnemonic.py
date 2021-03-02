@@ -1,11 +1,11 @@
-from unittest import TestCase
 import logging
+from unittest import TestCase
 
-from scigateway_auth.common.exceptions import MissingMnemonicError, AuthenticationError
+from scigateway_auth.common.exceptions import AuthenticationError, MissingMnemonicError
 from scigateway_auth.src.auth import requires_mnemonic
 
 
-class TestRequires_mnemonic(TestCase):
+class TestRequiresMnemonic(TestCase):
     @classmethod
     def setUpClass(cls):
         logging.disable(logging.CRITICAL)

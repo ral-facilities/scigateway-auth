@@ -1,9 +1,14 @@
-import logging
 import json
+import logging
+
 import jwt
 
-from scigateway_auth.common.constants import PUBLIC_KEY, BLACKLIST, MAINTENANCE_CONFIG_PATH, \
-    SCHEDULED_MAINTENANCE_CONFIG_PATH
+from scigateway_auth.common.constants import (
+    BLACKLIST,
+    MAINTENANCE_CONFIG_PATH,
+    PUBLIC_KEY,
+    SCHEDULED_MAINTENANCE_CONFIG_PATH,
+)
 
 log = logging.getLogger()
 
@@ -27,22 +32,27 @@ class MaintenanceMode(object):
         Updates the maintenance mode state in the maintenance.json file.
         :param access_token: the access token to be verified
         :param state: the state the JSON file to be updated with
-        :return: tuple with message and status code e.g. ("Maintenance state successfully
-                 updated", 200)
+        :return: tuple with message and status code e.g. ("Maintenance state
+                 successfully updated", 200)
         """
         log.info("Attempting to update maintenance mode state")
         try:
             _verify_token(access_token)
         except Exception as error:
-            log.warning(f"Token was not valid: {access_token} - {error}")
+            log.warning("Token was not valid: %s - %s", access_token, error.args)
             return "Access token was not valid", 403
 
         try:
             if not _is_user_admin(access_token):
-                log.warning("Attempted maintenance mode state update from non admin user")
+                log.warning(
+                    "Attempted maintenance mode state update from non admin user",
+                )
                 return "Unauthorized", 403
         except Exception as error:
-            log.warning(f"A problem occurred while verifying if admin is user - {error}")
+            log.warning(
+                "A problem occurred while verifying if admin is user - %s",
+                error.args,
+            )
             return "Unauthorized", 403
         log.info("User is admin")
 
@@ -51,7 +61,7 @@ class MaintenanceMode(object):
                 json.dump(state, file)
             log.info("Maintenance mode state successfully updated")
             return "Maintenance mode state successfully updated", 200
-        except (FileNotFoundError, IOError, OverflowError, TypeError, ValueError):
+        except (IOError, OverflowError, TypeError, ValueError):
             log.warning("Failed to update maintenance mode state")
             return "Failed to update maintenance mode state", 500
 
@@ -73,25 +83,32 @@ class ScheduledMaintenanceMode(object):
 
     def set_state(self, access_token, state):
         """
-        Updates the scheduled maintenance mode state in the scheduled_maintenance.json file.
+        Updates the scheduled maintenance mode state in the
+        scheduled_maintenance.json file.
         :param access_token: the access token to be verified
         :param state: the state the JSON file to be updated with
-        :return: tuple with message and status code e.g. ("Scheduled maintenance mode state
-                 successfully updated", 200)
+        :return: tuple with message and status code e.g. ("Scheduled
+                 maintenance mode state successfully updated", 200)
         """
         log.info("Attempting to update scheduled maintenance mode state")
         try:
             _verify_token(access_token)
         except Exception as error:
-            log.warning(f"Token was not valid: {access_token} - {error}")
+            log.warning("Token was not valid: %s - %s", access_token, error.args)
             return "Access token was not valid", 403
 
         try:
             if not _is_user_admin(access_token):
-                log.warning("Attempted scheduled maintenance mode state update from non admin user")
+                log.warning(
+                    "Attempted scheduled maintenance mode state update from "
+                    "non admin user",
+                )
                 return "Unauthorized", 403
         except Exception as error:
-            log.warning(f"A problem occurred while verifying if admin is user - {error}")
+            log.warning(
+                "A problem occurred while verifying if admin is user - %s",
+                error.args,
+            )
             return "Unauthorized", 403
         log.info("User is admin")
 
@@ -100,7 +117,7 @@ class ScheduledMaintenanceMode(object):
                 json.dump(state, file)
             log.info("Scheduled maintenance mode state successfully updated")
             return "Scheduled maintenance mode state successfully updated", 200
-        except (FileNotFoundError, IOError, OverflowError, TypeError, ValueError):
+        except (IOError, OverflowError, TypeError, ValueError):
             log.warning("Failed to update scheduled maintenance mode state")
             return "Failed to update scheduled maintenance mode state", 500
 
@@ -113,8 +130,7 @@ def _verify_token(token):
     log.info("Verifying token")
     jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
     if token in BLACKLIST:
-        log.warning(
-            f"Token in blacklist: {token}")
+        log.warning("Token in blacklist: %s", token)
         raise Exception("Token in blacklist")
     log.info("Token verified")
 
@@ -127,8 +143,8 @@ def _is_user_admin(token):
     """
     log.info("Verifying if user is admin")
     payload = jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
-    if 'userIsAdmin' not in payload:
+    if "userIsAdmin" not in payload:
         log.warning("Payload missing admin information")
         raise Exception("Payload missing admin information")
 
-    return payload['userIsAdmin']
+    return payload["userIsAdmin"]
