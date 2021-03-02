@@ -1,0 +1,115 @@
+name: CI
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  tests:
+    runs-on: ubuntu-16.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
+    name: Python ${{ matrix.python-version }} Build & Tests
+    steps:
+    - name: Add apt repo
+      run: sudo add-apt-repository universe
+
+    # Setup Python
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64
+
+    # Checkout repo
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    # Prep for the tests
+    - name: Create log file
+      run: touch logs.log
+    - name: Configure log file location
+      run: echo "`jq -r --arg REPO_DIR "$GITHUB_WORKSPACE/logs.log" \
+        '.log_location=$REPO_DIR' scigateway-auth/scigateway_auth/config.json.example`" > scigateway-auth/scigateway_auth/config.json.example
+    - name: Create config.json
+      run: cp scigateway-auth/scigateway_auth/config.json.example scigateway-auth/scigateway_auth/config.json
+
+    # Install Nox, Poetry and API's dependencies
+    - name: Install Nox
+      run: pip install nox==2020.8.22
+    - name: Install Poetry
+      run: pip install poetry==1.1.4
+    - name: Install dependencies
+      run: cd scigateway-auth/ && poetry install
+
+    # Run Nox tests session, saves and uploads a coverage report to codecov
+    - name: Run Nox tests session
+      run: nox -s tests -f scigateway-auth/noxfile.py -- --cov=scigateway_auth --cov-report=xml
+    - name: Upload code coverage report
+      if: matrix.python-version == '3.6'
+      uses: codecov/codecov-action@v1
+      with:
+        directory: ./scigateway-auth
+
+  linting:
+    runs-on: ubuntu-16.04
+    name: Linting
+    steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.6'
+        architecture: x64
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Install Nox
+      run: pip install nox==2020.8.22
+    - name: Install Poetry
+      run: pip install poetry==1.1.4
+
+    - name: Run Nox lint session
+      run: nox -s lint -f scigateway-auth/noxfile.py
+
+  formatting:
+    runs-on: ubuntu-16.04
+    name: Code Formatting
+    steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.6'
+        architecture: x64
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Install Nox
+      run: pip install nox==2020.8.22
+    - name: Install Poetry
+      run: pip install poetry==1.1.4
+
+    - name: Run Nox black session
+      run: nox -s black -f scigateway-auth/noxfile.py
+
+  safety:
+    runs-on: ubuntu-16.04
+    name: Dependency Safety
+    steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.6'
+        architecture: x64
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Install Nox
+      run: pip install nox==2020.8.22
+    - name: Install Poetry
+      run: pip install poetry==1.1.4
+
+    - name: Run Nox safety session
+      run: nox -s safety -f scigateway-auth/noxfile.py
