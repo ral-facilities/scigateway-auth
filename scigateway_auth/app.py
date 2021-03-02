@@ -9,12 +9,12 @@ if __name__ == "__main__":  # NOQA: E402
 from scigateway_auth.common.config import config
 from scigateway_auth.common.logger_setup import setup_logger
 from scigateway_auth.src.endpoints import (
-    LoginEndpoint,
-    VerifyEndpoint,
-    RefreshEndpoint,
     AuthenticatorsEndpoint,
+    LoginEndpoint,
     MaintenanceEndpoint,
+    RefreshEndpoint,
     ScheduledMaintenanceEndpoint,
+    VerifyEndpoint,
 )  # NOQA: E402
 
 app = Flask(__name__)
@@ -32,5 +32,7 @@ api.add_resource(ScheduledMaintenanceEndpoint, "/scheduled_maintenance")
 
 if __name__ == "__main__":
     app.run(
-        host=config.get_host(), port=config.get_port(), debug=config.is_debug_mode()
+        host=config.get_host(),
+        port=config.get_port(),
+        debug=config.is_debug_mode(),
     )

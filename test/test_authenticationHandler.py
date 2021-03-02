@@ -1,17 +1,17 @@
 import datetime
-from unittest import TestCase, mock
+from unittest import mock, TestCase
 
 from scigateway_auth.src.auth import AuthenticationHandler
 from test.testutils import (
+    EXPIRED_ACCESS_TOKEN,
+    EXPIRED_REFRESH_TOKEN,
+    NEW_REFRESH_TOKEN,
     PRIVATE_KEY,
     PUBLIC_KEY,
     REFRESHED_ACCESS_TOKEN,
     REFRESHED_NON_ADMIN_ACCESS_TOKEN,
     VALID_ACCESS_TOKEN,
-    EXPIRED_ACCESS_TOKEN,
-    NEW_REFRESH_TOKEN,
     VALID_REFRESH_TOKEN,
-    EXPIRED_REFRESH_TOKEN,
 )
 
 
@@ -120,7 +120,7 @@ class TestAuthenticationHandler(TestCase):
         expected_access_token = REFRESHED_NON_ADMIN_ACCESS_TOKEN
         self.assertEqual(result, (expected_access_token, 200))
 
-    def test_refresh_token_error_EXPIRED_REFRESH_TOKEN(self):
+    def test_refresh_token_error_expired_refresh_token(self):
         refresh_token = EXPIRED_REFRESH_TOKEN
         access_token = REFRESHED_ACCESS_TOKEN
         result = self.handler.refresh_token(refresh_token, access_token)

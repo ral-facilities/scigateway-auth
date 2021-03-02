@@ -56,7 +56,7 @@ sqlite-devel openssl-devel xz xz-devel libffi-devel findutils
 ```
 
 To make use of `pyenv`, let's install different versions of Python onto the system. In
-production, DataGateway API uses Python 3.6, so this should definitely be part a
+production, SciGateway Auth uses Python 3.6, so this should definitely be part a
 development environment for this repo. This stage might take some time as each Python
 version needs to be downloaded and built individually:
 
@@ -219,9 +219,11 @@ pyenv install 3.7.7
 python3.7 --version
 pyenv install 3.8.2
 python3.8 --version
+pyenv install 3.9.0
+python3.9 --version
 
 # Make installed Python versions available to repo
-pyenv local 3.6.8 3.7.7 3.8.2
+pyenv local 3.6.8 3.7.7 3.8.2 3.9.0
 
 # Install Poetry
 curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
@@ -278,9 +280,11 @@ The project consists of 3 main packages, and app.py. The config, constants and e
     │   ├── test_ICATAuthenticator.py
     │   └── test_requires_mnemonic.py
     ├── logs.log
+    ├── noxfile.py
     ├── openapi.yaml
-    ├── README.md
-    └── requirements.txt
+    ├── poetry.lock
+    ├── pyproject.toml
+    └── README.md
 ```
 
 # Running Tests
