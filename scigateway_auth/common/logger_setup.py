@@ -1,6 +1,6 @@
 import logging.config
 
-from scigateway_auth.common.config import config
+from scigateway_auth.common.config import Config, get_config_value
 
 logger_config = {
     "version": 1,
@@ -12,15 +12,15 @@ logger_config = {
     },
     "handlers": {
         "default": {
-            "level": config.get_log_level(),
+            "level": get_config_value(Config.LOG_LEVEL),
             "formatter": "default",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": config.get_log_location(),
+            "filename": get_config_value(Config.LOG_LOCATION),
             "maxBytes": 5000000,
             "backupCount": 10,
         },
     },
-    "root": {"level": config.get_log_level(), "handlers": ["default"]},
+    "root": {"level": get_config_value(Config.LOG_LEVEL), "handlers": ["default"]},
 }
 
 

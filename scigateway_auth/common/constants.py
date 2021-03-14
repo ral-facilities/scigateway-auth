@@ -1,23 +1,25 @@
-from scigateway_auth.common.config import config
+from scigateway_auth.common.config import Config, get_config_value
 
 try:
-    with open(config.get_private_key_path(), "r") as f:
+    with open(get_config_value(Config.PRIVATE_KEY_PATH), "r") as f:
         PRIVATE_KEY = f.read()
 except FileNotFoundError:
     PRIVATE_KEY = ""
 
 try:
-    with open(config.get_public_key_path(), "r") as f:
+    with open(get_config_value(Config.PUBLIC_KEY_PATH), "r") as f:
         PUBLIC_KEY = f.read()
 except FileNotFoundError:
     PUBLIC_KEY = ""
 
-ICAT_URL = config.get_icat_url()
-ACCESS_TOKEN_VALID_FOR = config.get_access_token_valid_for()
-REFRESH_TOKEN_VALID_FOR = config.get_refresh_token_valid_for()
-BLACKLIST = config.get_blacklist()
-ADMIN_USERS = config.get_admin_users()
-MAINTENANCE_CONFIG_PATH = config.get_maintenance_config_path()
-SCHEDULED_MAINTENANCE_CONFIG_PATH = config.get_scheduled_maintenance_config_path()
+ICAT_URL = get_config_value(Config.ICAT_URL)
+ACCESS_TOKEN_VALID_FOR = get_config_value(Config.ACCESS_TOKEN_VALID_FOR)
+REFRESH_TOKEN_VALID_FOR = get_config_value(Config.REFRESH_TOKEN_VALID_FOR)
+BLACKLIST = get_config_value(Config.BLACKLIST)
+ADMIN_USERS = get_config_value(Config.ADMIN_USERS)
+MAINTENANCE_CONFIG_PATH = get_config_value(Config.MAINTENANCE_CONFIG_PATH)
+SCHEDULED_MAINTENANCE_CONFIG_PATH = get_config_value(
+    Config.SCHEDULED_MAINTENANCE_CONFIG_PATH,
+)
 SECURE = True
-VERIFY = config.get_verify()
+VERIFY = get_config_value(Config.VERIFY)
