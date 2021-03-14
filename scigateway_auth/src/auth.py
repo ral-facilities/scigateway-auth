@@ -9,7 +9,6 @@ import requests
 from scigateway_auth.common.config import Config, get_config_value
 from scigateway_auth.common.constants import (
     ACCESS_TOKEN_VALID_FOR,
-    ADMIN_USERS,
     ICAT_URL,
     PRIVATE_KEY,
     PUBLIC_KEY,
@@ -114,7 +113,7 @@ class AuthenticationHandler(object):
             credentials=self.credentials,
         )
         username = authenticator.get_username(session_id)
-        user_is_admin = username in ADMIN_USERS
+        user_is_admin = username in get_config_value(Config.ADMIN_USERS)
         return {
             "sessionId": session_id,
             "username": username,
