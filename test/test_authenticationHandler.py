@@ -1,6 +1,7 @@
 import datetime
 from unittest import mock, TestCase
 
+from scigateway_auth.common.config import Config
 from scigateway_auth.src.auth import AuthenticationHandler
 from test.testutils import (
     EXPIRED_ACCESS_TOKEN,
@@ -49,6 +50,11 @@ def mock_session_put_request_failure(*args, **kwargs):
 
 def mock_datetime_now(*args, **kwargs):
     return datetime.datetime(2020, 1, 8)
+
+
+def mock_get_blacklist_with_tokens(*args, **kwargs):
+    if args[0] is Config.BLACKLIST:
+        return [VALID_REFRESH_TOKEN]
 
 
 @mock.patch("scigateway_auth.src.auth.ACCESS_TOKEN_VALID_FOR", 5)
@@ -126,8 +132,11 @@ class TestAuthenticationHandler(TestCase):
         result = self.handler.refresh_token(refresh_token, access_token)
         self.assertEqual(result, ("Refresh token was not valid", 403))
 
-    @mock.patch("scigateway_auth.src.auth.BLACKLIST", [VALID_REFRESH_TOKEN])
-    def test_refresh_token_error_blacklisted_refresh_token(self):
+    @mock.patch(
+        "scigateway_auth.src.auth.get_config_value",
+        side_effect=mock_get_blacklist_with_tokens,
+    )
+    def test_refresh_token_error_blacklisted_refresh_token(self, mock_blacklist):
         refresh_token = VALID_REFRESH_TOKEN
         access_token = REFRESHED_ACCESS_TOKEN
         result = self.handler.refresh_token(refresh_token, access_token)
