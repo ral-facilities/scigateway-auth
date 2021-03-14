@@ -3,8 +3,8 @@ import logging
 
 import jwt
 
+from scigateway_auth.common.config import Config, get_config_value
 from scigateway_auth.common.constants import (
-    BLACKLIST,
     MAINTENANCE_CONFIG_PATH,
     PUBLIC_KEY,
     SCHEDULED_MAINTENANCE_CONFIG_PATH,
@@ -129,7 +129,7 @@ def _verify_token(token):
     """
     log.info("Verifying token")
     jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
-    if token in BLACKLIST:
+    if token in get_config_value(Config.BLACKLIST):
         log.warning("Token in blacklist: %s", token)
         raise Exception("Token in blacklist")
     log.info("Token verified")

@@ -6,10 +6,10 @@ import logging
 import jwt
 import requests
 
+from scigateway_auth.common.config import Config, get_config_value
 from scigateway_auth.common.constants import (
     ACCESS_TOKEN_VALID_FOR,
     ADMIN_USERS,
-    BLACKLIST,
     ICAT_URL,
     PRIVATE_KEY,
     PUBLIC_KEY,
@@ -181,7 +181,7 @@ class AuthenticationHandler(object):
         try:
             log.info("Refreshing token")
             jwt.decode(refresh_token, PUBLIC_KEY, algorithms=["RS256"])
-            if refresh_token in BLACKLIST:
+            if refresh_token in get_config_value(Config.BLACKLIST):
                 log.warning(
                     "Attempted refresh from token in blacklist: %s",
                     refresh_token,

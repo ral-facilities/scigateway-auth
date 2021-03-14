@@ -15,7 +15,6 @@ except FileNotFoundError:
 ICAT_URL = get_config_value(Config.ICAT_URL)
 ACCESS_TOKEN_VALID_FOR = get_config_value(Config.ACCESS_TOKEN_VALID_FOR)
 REFRESH_TOKEN_VALID_FOR = get_config_value(Config.REFRESH_TOKEN_VALID_FOR)
-BLACKLIST = get_config_value(Config.BLACKLIST)
 ADMIN_USERS = get_config_value(Config.ADMIN_USERS)
 MAINTENANCE_CONFIG_PATH = get_config_value(Config.MAINTENANCE_CONFIG_PATH)
 SCHEDULED_MAINTENANCE_CONFIG_PATH = get_config_value(
