@@ -1,103 +1,50 @@
+from enum import Enum
 import json
 from pathlib import Path
 import sys
 
 
-class Config(object):
-    def __init__(self):
+class Config(Enum):
+    HOST = "host"
+    PORT = "port"
+    DEBUG_MODE = "debug_mode"
+    ICAT_URL = "icat_url"
+    LOG_LEVEL = "log_level"
+    LOG_LOCATION = "log_location"
+    PRIVATE_KEY_PATH = "private_key_path"
+    PUBLIC_KEY_PATH = "public_key_path"
+    ACCESS_TOKEN_VALID_FOR = "access_token_valid_for"  # noqa: S105
+    REFRESH_TOKEN_VALID_FOR = "refresh_token_valid_for"  # noqa: S105
+    BLACKLIST = "blacklist"
+    ADMIN_USERS = "admin_users"
+    MAINTENANCE_CONFIG_PATH = "maintenance_config_path"
+    SCHEDULED_MAINTENANCE_CONFIG_PATH = "scheduled_maintenance_config_path"
+    VERIFY = "verify"
+
+
+def _load_config():
+    """
+    Loads config values from the JSON config file. Exits the application if it
+    fails to locate/ read the contents of the file.
+    :return: config values in form of a dictionary
+    """
+    try:
         with open(Path(__file__).parent.parent / "config.json") as target:
-            self.config = json.load(target)
-        target.close()
-
-    def get_host(self):
-        try:
-            return self.config["host"]
-        except KeyError:
-            sys.exit("Missing config value: host")
-
-    def get_port(self):
-        try:
-            return self.config["port"]
-        except KeyError:
-            sys.exit("Missing config value: port")
-
-    def is_debug_mode(self):
-        try:
-            return self.config["debug_mode"]
-        except KeyError:
-            sys.exit("Missing config value: debug_mode")
-
-    def get_icat_url(self):
-        try:
-            return self.config["icat_url"]
-        except KeyError:
-            sys.exit("Missing config value: icat_url")
-
-    def get_log_level(self):
-        try:
-            return self.config["log_level"]
-        except KeyError:
-            sys.exit("Missing config value, log_level")
-
-    def get_log_location(self):
-        try:
-            return self.config["log_location"]
-        except KeyError:
-            sys.exit("Missing config value, log_location")
-
-    def get_private_key_path(self):
-        try:
-            return self.config["private_key_path"]
-        except KeyError:
-            sys.exit("Missing config value, private_key_path")
-
-    def get_public_key_path(self):
-        try:
-            return self.config["public_key_path"]
-        except KeyError:
-            sys.exit("Missing config value, public_key_path")
-
-    def get_access_token_valid_for(self):
-        try:
-            return self.config["access_token_valid_for"]
-        except KeyError:
-            sys.exit("Missing config value, access_token_valid_for")
-
-    def get_refresh_token_valid_for(self):
-        try:
-            return self.config["refresh_token_valid_for"]
-        except KeyError:
-            sys.exit("Missing config value, refresh_token_valid_for")
-
-    def get_blacklist(self):
-        try:
-            return self.config["blacklist"]
-        except KeyError:
-            sys.exit("Missing config value, blacklist")
-
-    def get_admin_users(self):
-        try:
-            return self.config["admin_users"]
-        except KeyError:
-            sys.exit("Missing config value, admin_users")
-
-    def get_maintenance_config_path(self):
-        try:
-            return self.config["maintenance_config_path"]
-        except KeyError:
-            sys.exit("Missing config value, maintenance_config_path")
-
-    def get_scheduled_maintenance_config_path(self):
-        try:
-            return self.config["scheduled_maintenance_config_path"]
-        except KeyError:
-            sys.exit("Missing config value, scheduled_maintenance_config_path")
-
-    def get_verify(self):
-        try:
-            return self.config["verify"]
-        except KeyError:
-            sys.exit("Missing config value, verify")
+            return json.load(target)
+    except IOError:
+        sys.exit("Error loading config file")
 
 
-config = Config()
+def get_config_value(config):
+    """
+    Given a Config enum, it returns a config value. Reloads the values from the
+    config file so that a restart of the application is not required for config
+    changes to take effect. Exits the application if the provided enum is not in
+    the config dictionary.
+    :return: config value
+    """
+    config_values = _load_config()
+    try:
+        return config_values[config.value]
+    except KeyError:
+        sys.exit("Missing config value, %s" % config.value)

@@ -1,6 +1,7 @@
 import datetime
 from unittest import mock, TestCase
 
+from scigateway_auth.common.config import Config
 from scigateway_auth.src.auth import AuthenticationHandler
 from test.testutils import (
     EXPIRED_ACCESS_TOKEN,
@@ -51,6 +52,16 @@ def mock_datetime_now(*args, **kwargs):
     return datetime.datetime(2020, 1, 8)
 
 
+def mock_get_blacklist_with_tokens(*args, **kwargs):
+    if args[0] is Config.BLACKLIST:
+        return [VALID_REFRESH_TOKEN]
+
+
+def mock_get_admin_users(*args, **kwargs):
+    if args[0] is Config.ADMIN_USERS:
+        return ["test name"]
+
+
 @mock.patch("scigateway_auth.src.auth.ACCESS_TOKEN_VALID_FOR", 5)
 @mock.patch("scigateway_auth.src.auth.REFRESH_TOKEN_VALID_FOR", 10080)
 @mock.patch("scigateway_auth.src.auth.PRIVATE_KEY", PRIVATE_KEY)
@@ -79,8 +90,17 @@ class TestAuthenticationHandler(TestCase):
     @mock.patch("requests.post", side_effect=mock_post_requests)
     @mock.patch("requests.get", side_effect=mock_get_requests)
     @mock.patch("scigateway_auth.src.auth.current_time", side_effect=mock_datetime_now)
-    @mock.patch("scigateway_auth.src.auth.ADMIN_USERS", ["test name"])
-    def test_get_access_token_admin_user(self, mock_post, mock_get, mock_now):
+    @mock.patch(
+        "scigateway_auth.src.auth.get_config_value",
+        side_effect=mock_get_admin_users,
+    )
+    def test_get_access_token_admin_user(
+        self,
+        mock_post,
+        mock_get,
+        mock_now,
+        mock_admin_users,
+    ):
         self.handler.set_mnemonic("anon")
         token = self.handler.get_access_token()
         expected_token = REFRESHED_ACCESS_TOKEN
@@ -126,8 +146,11 @@ class TestAuthenticationHandler(TestCase):
         result = self.handler.refresh_token(refresh_token, access_token)
         self.assertEqual(result, ("Refresh token was not valid", 403))
 
-    @mock.patch("scigateway_auth.src.auth.BLACKLIST", [VALID_REFRESH_TOKEN])
-    def test_refresh_token_error_blacklisted_refresh_token(self):
+    @mock.patch(
+        "scigateway_auth.src.auth.get_config_value",
+        side_effect=mock_get_blacklist_with_tokens,
+    )
+    def test_refresh_token_error_blacklisted_refresh_token(self, mock_blacklist):
         refresh_token = VALID_REFRESH_TOKEN
         access_token = REFRESHED_ACCESS_TOKEN
         result = self.handler.refresh_token(refresh_token, access_token)

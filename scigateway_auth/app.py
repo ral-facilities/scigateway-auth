@@ -6,7 +6,7 @@ if __name__ == "__main__":  # NOQA: E402
 
     constants.SECURE = False
 
-from scigateway_auth.common.config import config
+from scigateway_auth.common.config import Config, get_config_value
 from scigateway_auth.common.logger_setup import setup_logger
 from scigateway_auth.src.endpoints import (
     AuthenticatorsEndpoint,
@@ -32,7 +32,7 @@ api.add_resource(ScheduledMaintenanceEndpoint, "/scheduled_maintenance")
 
 if __name__ == "__main__":
     app.run(
-        host=config.get_host(),
-        port=config.get_port(),
-        debug=config.is_debug_mode(),
+        host=get_config_value(Config.HOST),
+        port=get_config_value(Config.PORT),
+        debug=get_config_value(Config.DEBUG_MODE),
     )

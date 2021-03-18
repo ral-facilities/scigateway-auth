@@ -1,6 +1,7 @@
 import json
 from unittest import mock, TestCase
 
+from scigateway_auth.common.config import Config
 from scigateway_auth.src import admin
 from scigateway_auth.src.admin import MaintenanceMode
 from test.testutils import (
@@ -13,6 +14,16 @@ from test.testutils import (
     VALID_ACCESS_TOKEN,
     VALID_NON_ADMIN_ACCESS_TOKEN,
 )
+
+
+def mock_get_blacklist_with_tokens(*args, **kwargs):
+    if args[0] is Config.BLACKLIST:
+        return [VALID_ACCESS_TOKEN]
+
+
+def mock_get_blacklist_no_tokens(*args, **kwargs):
+    if args[0] is Config.BLACKLIST:
+        return []
 
 
 @mock.patch("scigateway_auth.src.admin.PUBLIC_KEY", PUBLIC_KEY)
@@ -31,7 +42,11 @@ class TestMaintenanceMode(TestCase):
     def test_get_state(self):
         self.assertEqual(self.maintenance_mode.get_state(), MAINTENANCE_STATE)
 
-    def test_set_state_valid_token(self):
+    @mock.patch(
+        "scigateway_auth.src.admin.get_config_value",
+        side_effect=mock_get_blacklist_no_tokens,
+    )
+    def test_set_state_valid_token(self, mock_blacklist):
         mock_json_dump = mock.patch.object(admin.json, "dump").start()
         with mock.patch("builtins.open", mock.mock_open()) as mocked_file:
             result = self.maintenance_mode.set_state(
@@ -60,8 +75,11 @@ class TestMaintenanceMode(TestCase):
         )
         self.assertEqual(result, ("Access token was not valid", 403))
 
-    @mock.patch("scigateway_auth.src.admin.BLACKLIST", [VALID_ACCESS_TOKEN])
-    def test_set_state_blacklisted_token(self):
+    @mock.patch(
+        "scigateway_auth.src.admin.get_config_value",
+        side_effect=mock_get_blacklist_with_tokens,
+    )
+    def test_set_state_blacklisted_token(self, mock_blacklist):
         result = self.maintenance_mode.set_state(VALID_ACCESS_TOKEN, MAINTENANCE_STATE)
         self.assertEqual(result, ("Access token was not valid", 403))
 
@@ -79,7 +97,11 @@ class TestMaintenanceMode(TestCase):
         )
         self.assertEqual(result, ("Unauthorized", 403))
 
-    def test_set_state_file_update_failure(self):
+    @mock.patch(
+        "scigateway_auth.src.admin.get_config_value",
+        side_effect=mock_get_blacklist_no_tokens,
+    )
+    def test_set_state_file_update_failure(self, mock_blacklist):
         with mock.patch("builtins.open", mock.mock_open()) as mocked_file:
             mocked_file.side_effect = IOError()
             result = self.maintenance_mode.set_state(
