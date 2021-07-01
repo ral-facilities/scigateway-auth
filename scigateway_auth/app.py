@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_restful import Api
+from flask_cors import CORS
 
 if __name__ == "__main__":  # NOQA: E402
     from scigateway_auth.common import constants
@@ -18,6 +19,7 @@ from scigateway_auth.src.endpoints import (
 )  # NOQA: E402
 
 app = Flask(__name__)
+cors = CORS(app)
 app.url_map.strict_slashes = False
 api = Api(app)
 
