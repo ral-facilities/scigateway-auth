@@ -1,6 +1,6 @@
 from flask import Flask
-from flask_restful import Api
 from flask_cors import CORS
+from flask_restful import Api
 
 if __name__ == "__main__":  # NOQA: E402
     from scigateway_auth.common import constants
