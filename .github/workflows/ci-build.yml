@@ -41,7 +41,7 @@ jobs:
     - name: Install Nox
       run: pip install nox==2020.8.22
     - name: Install Poetry
-      run: pip install poetry==1.1.4
+      run: pip install poetry==1.1.9
     - name: Install dependencies
       run: poetry install
 
@@ -67,7 +67,7 @@ jobs:
     - name: Install Nox
       run: pip install nox==2020.8.22
     - name: Install Poetry
-      run: pip install poetry==1.1.4
+      run: pip install poetry==1.1.9
 
     - name: Run Nox lint session
       run: nox -s lint
@@ -87,7 +87,7 @@ jobs:
     - name: Install Nox
       run: pip install nox==2020.8.22
     - name: Install Poetry
-      run: pip install poetry==1.1.4
+      run: pip install poetry==1.1.9
 
     - name: Run Nox black session
       run: nox -s black
@@ -107,7 +107,7 @@ jobs:
     - name: Install Nox
       run: pip install nox==2020.8.22
     - name: Install Poetry
-      run: pip install poetry==1.1.4
+      run: pip install poetry==1.1.9
 
     - name: Run Nox safety session
       run: nox -s safety
