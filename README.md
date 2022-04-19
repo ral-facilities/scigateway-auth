@@ -1,5 +1,5 @@
-[![Build Status](https://github.com/ral-facilities/scigateway-auth/workflows/CI/badge.svg?branch=master)](https://github.com/ral-facilities/scigateway-auth/actions?query=workflow%3A%22CI%22)
-[![Codecov](https://codecov.io/gh/ral-facilities/scigateway-auth/branch/master/graph/badge.svg)](https://codecov.io/gh/ral-facilities/scigateway-auth)
+[![Build Status](https://github.com/ral-facilities/scigateway-auth/workflows/CI/badge.svg?branch=main)](https://github.com/ral-facilities/scigateway-auth/actions?query=workflow%3A%22CI%22)
+[![Codecov](https://codecov.io/gh/ral-facilities/scigateway-auth/branch/main/graph/badge.svg)](https://codecov.io/gh/ral-facilities/scigateway-auth)
 
 # scigateway-auth
 
