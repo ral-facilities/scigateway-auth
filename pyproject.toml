@@ -25,6 +25,7 @@ PyJWT = "1.7.1"
 cryptography = "^3.3.2"
 pyOpenSSL = "18.0.0"
 jsonschema = "3.2.0"
+Flask-Cors = "^3.0.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
