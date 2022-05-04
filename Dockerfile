@@ -1,6 +1,6 @@
 # Dockerfile to build and serve scigateway-auth
 
-FROM python:alpine3.15
+FROM python:3.6-alpine3.15
 
 WORKDIR /scigateway-auth
 
