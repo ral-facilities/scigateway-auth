@@ -20,7 +20,7 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.6"
 Flask-RESTful = "0.3.7"
-requests = "2.22.0"
+requests = "^2.22.0"
 PyJWT = "1.7.1"
 cryptography = "^3.3.2"
 pyOpenSSL = "18.0.0"
@@ -33,7 +33,7 @@ coverage = {extras = ["pyproject.toml"], version = "^5.4"}
 pytest-cov = "^2.11.1"
 flake8 = "^3.8.4"
 flake8-bandit = "^2.1.2"
-flake8-black = "^0.2.1"
+flake8-black = "0.2.1"
 flake8-broken-line = "^0.3.0"
 flake8-bugbear = "^20.11.1"
 flake8-builtins = "^1.5.3"
