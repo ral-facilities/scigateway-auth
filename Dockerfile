@@ -12,3 +12,7 @@ RUN pip install poetry
 
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev
+
+# Generate JWT keys
+RUN mkdir keys
+RUN ssh-keygen -t rsa -m 'PEM' -f keys/jwt-key
