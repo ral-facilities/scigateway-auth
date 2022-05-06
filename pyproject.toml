@@ -19,7 +19,7 @@ authors = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
-Flask-RESTful = "0.3.7"
+Flask-RESTful = "^0.3.7"
 requests = "^2.22.0"
 PyJWT = "1.7.1"
 cryptography = "^3.3.2"
