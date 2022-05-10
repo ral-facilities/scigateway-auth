@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
+      - k8s-deployment
 jobs:
   tests:
     runs-on: ubuntu-20.04
@@ -111,3 +111,10 @@ jobs:
 
     - name: Run Nox safety session
       run: nox -s safety
+
+  docker:
+    name: Docker
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@v2
