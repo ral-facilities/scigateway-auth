@@ -113,6 +113,7 @@ jobs:
       run: nox -s safety
 
   docker:
+    needs: [tests, linting, formatting, safety]
     name: Docker
     runs-on: ubuntu-20.04
     steps:
