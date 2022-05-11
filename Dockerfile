@@ -4,8 +4,8 @@ FROM python:3.6-alpine3.15
 
 # Install the openssh-keygen system package as well as the packages
 # required to build and install the cryptography dependency with pip 
-# RUN apk add --no-cache --virtual build-dependencies \
-#     gcc musl-dev python3-dev libffi-dev openssl-dev cargo openssh-keygen
+RUN apk add --no-cache --virtual build-dependencies \
+    gcc musl-dev python3-dev libffi-dev openssl-dev cargo openssh-keygen
 
 WORKDIR /scigateway-auth
 
