@@ -21,4 +21,4 @@ RUN python -m pip install --upgrade pip \
 COPY scigateway_auth ./scigateway_auth
 
 # Serve the application using gunicorn - production ready WSGI server
-ENTRYPOINT ["gunicorn", "-c", "gunicorn.conf.py", "scigateway_auth.wsgi:application"]
+ENTRYPOINT ["poetry", "run", "gunicorn", "-c", "gunicorn.conf.py", "scigateway_auth.wsgi:application"]
