@@ -2,10 +2,12 @@
 
 FROM python:3.6-slim-bullseye
 
+RUN apt-get update
+
 # Install the openssh-keygen system package as well as the packages
 # required to build and install the cryptography dependency with pip 
-RUN apk add --no-cache --virtual build-dependencies \
-    openssh-keygen
+RUN apt-get install -y --no-install-recommends \
+    openssh-client
 
 WORKDIR /scigateway-auth
 
@@ -26,7 +28,7 @@ RUN mkdir keys
 RUN ssh-keygen -t rsa -m 'PEM' -f keys/jwt-key
 
 # Delete the system packages installed earlier as they are no longer needed
-RUN apk del build-dependencies
+RUN rm -rf /var/lib/apt/lists/*
 
 # Serve the application using gunicorn - production ready WSGI server
 ENTRYPOINT ["gunicorn", "-c", "gunicorn.conf.py", "scigateway_auth.wsgi:application"]
