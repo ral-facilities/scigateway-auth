@@ -4,7 +4,7 @@ FROM python:3.6-slim-bullseye
 
 WORKDIR /scigateway-auth
 
-COPY . .
+COPY poetry.lock pyproject.toml ./
 
 RUN python -m pip install --upgrade pip \
   && pip install 'poetry==1.1.13' \
@@ -17,6 +17,8 @@ RUN python -m pip install --upgrade pip \
   && ssh-keygen  -t rsa -m 'PEM' -f keys/jwt-key \
   # Delete the openssh-client package as it is no longer needed
   && rm -rf /var/lib/apt/lists/*
+
+COPY scigateway_auth ./scigateway_auth
 
 # Serve the application using gunicorn - production ready WSGI server
 ENTRYPOINT ["gunicorn", "-c", "gunicorn.conf.py", "scigateway_auth.wsgi:application"]
