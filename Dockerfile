@@ -15,7 +15,7 @@ COPY . .
 
 RUN python -m pip install --upgrade pip
 # Install the dependency management tool
-RUN pip install poetry
+RUN pip install 'poetry==1.1.13'
 
 RUN poetry config virtualenvs.create false
 # TODO - Should this be added to the existing pyproject.toml of the repo?
