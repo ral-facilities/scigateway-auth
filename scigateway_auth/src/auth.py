@@ -129,7 +129,7 @@ class AuthenticationHandler(object):
         log.info("Encoding JWT")
         token = jwt.encode(dictionary, PRIVATE_KEY, algorithm="RS256")
         log.info("Returning JWT")
-        return token.decode("utf-8")
+        return token
 
     def get_access_token(self):
         """
