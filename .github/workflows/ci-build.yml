@@ -26,7 +26,7 @@ jobs:
 
     # Checkout repo
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     # Prep for the tests
     - name: Create log file
@@ -62,7 +62,7 @@ jobs:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -82,7 +82,7 @@ jobs:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -102,7 +102,7 @@ jobs:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Nox
       run: pip install nox==2020.8.22
