@@ -72,7 +72,21 @@ def safety(session):
             f"--output={requirements.name}",
             external=True,
         )
-        session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+        # Ignore 51457 as the vulnerability has not yet being fixed
+        # Ignore 52322 and 52518 as the latest version of Gitpython does not
+        # support python 3.6 which is still used in production
+        session.run(
+            "safety",
+            "check",
+            f"--file={requirements.name}",
+            "--full-report",
+            "--ignore",
+            "51457",
+            "--ignore",
+            "52322",
+            "--ignore",
+            "52518",
+        )
 
         try:
             # Due to delete=False, the file must be deleted manually
