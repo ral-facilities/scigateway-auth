@@ -22,7 +22,7 @@ python = "^3.6"
 Flask-RESTful = "^0.3.7"
 requests = "^2.22.0"
 PyJWT = "2.4.0"
-cryptography = "^3.3.2"
+cryptography = "^39.0.1"
 pyOpenSSL = "18.0.0"
 jsonschema = "3.2.0"
 Flask-Cors = "^3.0.10"
@@ -43,7 +43,7 @@ flake8-import-order = "^0.18.1"
 flake8-logging-format = "^0.6.0"
 pep8-naming = "^0.11.1"
 black = "^20.8b1"
-safety = "^1.10.3"
+safety = "^2.2.0"
 
 [tool.poetry.scripts]
 
