@@ -3,14 +3,22 @@
 # Generate JWT keys
 ssh-keygen -t rsa -m 'PEM' -f /scigateway-auth-run/keys/jwt-key -q -N ""
 
+# Use a tempfile instead of sed -i so that only the file, not the directory needs to be writable
+TEMPFILE="$(mktemp)"
+
 # Set values in config.yaml from environment variables
-sed -i "s|\"icat_url\": \".*\"|\"icat_url\": \"$ICAT_URL\"|" /scigateway-auth-run/config.json
-sed -i "s|\"log_location\": \".*\"|\"log_location\": \"$LOG_LOCATION\"|" /scigateway-auth-run/config.json
-sed -i "s|\"private_key_path\": \".*\"|\"private_key_path\": \"$PRIVATE_KEY_PATH\"|" /scigateway-auth-run/config.json
-sed -i "s|\"public_key_path\": \".*\"|\"public_key_path\": \"$PUBLIC_KEY_PATH\"|" /scigateway-auth-run/config.json
-sed -i "s|\"maintenance_config_path\": \".*\"|\"maintenance_config_path\": \"$MAINTENANCE_CONFIG_PATH\"|" /scigateway-auth-run/config.json
-sed -i "s|\"scheduled_maintenance_config_path\": \".*\"|\"scheduled_maintenance_config_path\": \"$SCHEDULED_MAINTENANCE_CONFIG_PATH\"|" /scigateway-auth-run/config.json
-sed -i "s|\"verify\": [^,]*|\"verify\": $VERIFY|" /scigateway-auth-run/config.json
+# No quotes for verify because it's boolean
+sed -e "s|\"icat_url\": \".*\"|\"icat_url\": \"$ICAT_URL\"|" \
+    -e "s|\"log_location\": \".*\"|\"log_location\": \"$LOG_LOCATION\"|" \
+    -e "s|\"private_key_path\": \".*\"|\"private_key_path\": \"$PRIVATE_KEY_PATH\"|" \
+    -e "s|\"public_key_path\": \".*\"|\"public_key_path\": \"$PUBLIC_KEY_PATH\"|" \
+    -e "s|\"maintenance_config_path\": \".*\"|\"maintenance_config_path\": \"$MAINTENANCE_CONFIG_PATH\"|" \
+    -e "s|\"scheduled_maintenance_config_path\": \".*\"|\"scheduled_maintenance_config_path\": \"$SCHEDULED_MAINTENANCE_CONFIG_PATH\"|" \
+    -e "s|\"verify\": [^,]*|\"verify\": $VERIFY|" \
+    scigateway_auth/config.json > "$TEMPFILE"
+
+cat "$TEMPFILE" > scigateway_auth/config.json
+rm "$TEMPFILE"
 
 # Run the CMD instruction
 exec "$@"
