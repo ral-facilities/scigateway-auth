@@ -31,29 +31,33 @@ RUN --mount=type=cache,target=/root/.cache \
         'gunicorn~=20.1.0' \
         /tmp/scigateway_auth-*.whl; \
     \
+    # Create a symlink to the installed python module \
     SCIGATEWAY_AUTH_LOCATION="$(python3 -m pip show scigateway_auth | awk '/^Location:/ { print $2 }')"; \
+    ln -s "$SCIGATEWAY_AUTH_LOCATION/scigateway_auth/" scigateway_auth; \
     \
-    # Create config.json from its .example file. It will need to be editted by the entrypoint script so create it in our non-root user's home directory and create a symlink \
-    cp "$SCIGATEWAY_AUTH_LOCATION/scigateway_auth/config.json.example" /scigateway-auth-run/config.json; \
-    ln -s /scigateway-auth-run/config.json "$SCIGATEWAY_AUTH_LOCATION/scigateway_auth/config.json"; \
+    # Create config.json from its .example file \
+    cp scigateway_auth/config.json.example scigateway_auth/config.json; \
     \
     # Create directory for JWT keys (they will be generated in the entrypoint script) \
-    mkdir /scigateway-auth-run/keys; \
-    chmod 0700 /scigateway-auth-run/keys; \
+    mkdir keys; \
+    chmod 0700 keys; \
     \
     # Create a non-root user to run as \
     addgroup -S scigateway-auth; \
     adduser -S -D -G scigateway-auth -H -h /scigateway-auth-run scigateway-auth; \
-    chown -R scigateway-auth:scigateway-auth /scigateway-auth-run;
+    \
+    # Change ownership of maintenance/ - it needs to be writable at runtime \
+    # Change ownership of keys/ and config.json - the entrypoint script will need to edit them \
+    chown -R scigateway-auth:scigateway-auth keys/ maintenance/ scigateway_auth/config.json;
 
 USER scigateway-auth
 
 ENV ICAT_URL="http://localhost"
 ENV LOG_LOCATION="/dev/stdout"
-ENV PRIVATE_KEY_PATH="/scigateway-auth-run/keys/jwt-key"
-ENV PUBLIC_KEY_PATH="/scigateway-auth-run/keys/jwt-key.pub"
-ENV MAINTENANCE_CONFIG_PATH="/scigateway-auth-run/maintenance/maintenance.json"
-ENV SCHEDULED_MAINTENANCE_CONFIG_PATH="/scigateway-auth-run/maintenance/scheduled_maintenance.json"
+ENV PRIVATE_KEY_PATH="keys/jwt-key"
+ENV PUBLIC_KEY_PATH="keys/jwt-key.pub"
+ENV MAINTENANCE_CONFIG_PATH="maintenance/maintenance.json"
+ENV SCHEDULED_MAINTENANCE_CONFIG_PATH="maintenance/scheduled_maintenance.json"
 ENV VERIFY="true"
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/
