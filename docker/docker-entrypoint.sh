@@ -1,7 +1,10 @@
 #!/bin/sh -eu
 
 # Generate JWT keys
-ssh-keygen -t rsa -m 'PEM' -f /scigateway-auth-run/keys/jwt-key -q -N ""
+if [ ! -e /scigateway-auth-run/keys/jwt-key ]
+then
+    ssh-keygen -t rsa -m 'PEM' -f /scigateway-auth-run/keys/jwt-key -q -N ""
+fi
 
 # Use a tempfile instead of sed -i so that only the file, not the directory needs to be writable
 TEMPFILE="$(mktemp)"
