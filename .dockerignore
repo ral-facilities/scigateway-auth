@@ -1,7 +1,0 @@
-/.github
-/test
-.flake8
-.gitignore
-.pre-commit-config.yaml
-LICENSE
-noxfile.py
