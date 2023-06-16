@@ -19,14 +19,14 @@ jobs:
 
     # Setup Python
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
       with:
         python-version: ${{ matrix.python-version }}
         architecture: x64
 
     # Checkout repo
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
     # Prep for the tests
     - name: Create log file
@@ -54,19 +54,19 @@ jobs:
       run: nox -s tests -- --cov=scigateway_auth --cov-report=xml
     - name: Upload code coverage report
       if: matrix.python-version == '3.6'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
 
   linting:
     runs-on: ubuntu-20.04
     name: Linting
     steps:
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
       with:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -81,12 +81,12 @@ jobs:
     name: Code Formatting
     steps:
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
       with:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -101,12 +101,12 @@ jobs:
     name: Dependency Safety
     steps:
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4.5.0
       with:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
     - name: Install Nox
       run: pip install nox==2020.8.22
