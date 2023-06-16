@@ -75,6 +75,8 @@ def safety(session):
         # Ignore 51457 as the vulnerability has not yet being fixed
         # Ignore 52322 and 52518 as the latest version of Gitpython does not
         # support python 3.6 which is still used in production
+        # Ignore 53325, 53326, 54456, and 55261 as the fixed versions do not support
+        # python 3.6
         session.run(
             "safety",
             "check",
@@ -86,6 +88,14 @@ def safety(session):
             "52322",
             "--ignore",
             "52518",
+            "--ignore",
+            "53325",
+            "--ignore",
+            "53326",
+            "--ignore",
+            "54456",
+            "--ignore",
+            "55261",
         )
 
         try:
