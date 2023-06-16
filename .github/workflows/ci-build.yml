@@ -42,6 +42,10 @@ jobs:
       run: pip install nox==2020.8.22
     - name: Install Poetry
       run: pip install poetry==1.1.9
+    # This fixes the issue with cachecontrol (https://github.com/psf/cachecontrol/issues/292).
+    # We will not be facing this issue when we upgrade to a newer Poetry version.
+    - name: Install Requests
+      run: pip install 'requests<2.30'
     - name: Install dependencies
       run: poetry install
 
