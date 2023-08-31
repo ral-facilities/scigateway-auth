@@ -9,7 +9,7 @@ fi
 # Use a tempfile instead of sed -i so that only the file, not the directory needs to be writable
 TEMPFILE="$(mktemp)"
 
-# Set values in config.yaml from environment variables
+# Set values in config.json from environment variables
 # No quotes for verify because it's boolean
 sed -e "s|\"icat_url\": \".*\"|\"icat_url\": \"$ICAT_URL\"|" \
     -e "s|\"log_location\": \".*\"|\"log_location\": \"$LOG_LOCATION\"|" \

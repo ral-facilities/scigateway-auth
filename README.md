@@ -260,7 +260,7 @@ The `verify` option in `config.json` corresponds to what is supplied to the [`re
 - `false`: This sets `verify=False` and thus disables certificate verification. This is useful for dev but should not be used in production.
 - `"/path/to/CA_BUNDLE"`: this sets `verify="/path/to/CA_BUNDLE"` and will allow you to explicitly trust _only_ the specified self signed certificate. This is useful for preprod or production.
 
-It is also possible to run the API inside Docker. The `Dockerfile` can be used to build a Docker image which in turn can be used to create a container. The `Dockerfile` is configured to create a production image and runs a Gunicorn server on port `8000` when a container is started. Environment variables have also been defined in the `Dockerfile` to allow for values to be passed at runtime to future running containers. These values are used by the `docker/docker-entrypoint.sh` script to update the config values in the `config.yaml` file. The environment varialbes are:
+It is also possible to run the API inside Docker. The `Dockerfile` can be used to build a Docker image which in turn can be used to create a container. The `Dockerfile` is configured to create a production image and runs a Gunicorn server on port `8000` when a container is started. Environment variables have also been defined in the `Dockerfile` to allow for values to be passed at runtime to future running containers. These values are used by the `docker/docker-entrypoint.sh` script to update the config values in the `config.json` file. The environment varialbes are:
 - `ICAT_URL` (Default value: `http://localhost`)
 - `LOG_LOCATION` (Default value: `/dev/stdout`)
 - `PRIVATE_KEY_PATH` (Default value: `keys/jwt-key`)
