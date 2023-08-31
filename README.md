@@ -260,6 +260,30 @@ The `verify` option in `config.json` corresponds to what is supplied to the [`re
 - `false`: This sets `verify=False` and thus disables certificate verification. This is useful for dev but should not be used in production.
 - `"/path/to/CA_BUNDLE"`: this sets `verify="/path/to/CA_BUNDLE"` and will allow you to explicitly trust _only_ the specified self signed certificate. This is useful for preprod or production.
 
+It is also possible to run the API inside Docker. The `Dockerfile` can be used to build a Docker image which in turn can be used to create a container. The `Dockerfile` is configured to create a production image and runs a Gunicorn server on port `8000` when a container is started. Environment variables have also been defined in the `Dockerfile` to allow for values to be passed at runtime to future running containers. These values are used by the `docker/docker-entrypoint.sh` script to update the config values in the `config.yaml` file. The environment varialbes are:
+- `ICAT_URL` (Default value: `http://localhost`)
+- `LOG_LOCATION` (Default value: `/dev/stdout`)
+- `PRIVATE_KEY_PATH` (Default value: `keys/jwt-key`)
+- `PUBLIC_KEY_PATH` (Default value: `keys/jwt-key.pub`)
+- `MAINTENANCE_CONFIG_PATH` (Default value: `maintenance/maintenance.json`)
+- `SCHEDULED_MAINTENANCE_CONFIG_PATH` (Default value: `maintenance/scheduled_maintenance.json`)
+- `VERIFY` (Default value: `true`)
+
+To build an image, run:
+```bash
+docker build -t scigateway_auth_image .
+```
+
+To start a container on port `8000` from the image that you just built, run:
+```bash
+docker run -p 8000:8000 --name scigateway_auth_container scigateway_auth_image 
+```
+
+If you want to pass values for the environment variables then instead run:
+```bash
+docker run -p 8000:8000 --name scigateway_auth_container --env ICAT_URL=https://127.0.0.1:8181 --env LOG_LOCATION=/datagateway-api-run/logs.log --env VERIFY=false scigateway_auth_image
+```
+
 # Project structure
 
 The project consists of 3 main packages, and app.py. The config, constants and exceptions are in the `common` package and the endpoints and authentication logic are in `src`. The api is setup in app.py. A directory tree is shown below:
