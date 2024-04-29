@@ -26,7 +26,7 @@ jobs:
 
     # Checkout repo
     - name: Checkout repo
-      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
     # Prep for the tests
     - name: Create log file
@@ -66,7 +66,7 @@ jobs:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -86,7 +86,7 @@ jobs:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -106,7 +106,7 @@ jobs:
         python-version: '3.6'
         architecture: x64
     - name: Checkout repo
-      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
     - name: Install Nox
       run: pip install nox==2020.8.22
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Check out repo
-      uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.5.2
+      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v3.5.2
 
     - name: Login to Harbor
       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2.1.0
