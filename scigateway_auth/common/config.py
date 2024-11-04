@@ -5,12 +5,7 @@ import sys
 
 
 class Config(Enum):
-    HOST = "host"
-    PORT = "port"
-    DEBUG_MODE = "debug_mode"
     ICAT_URL = "icat_url"
-    LOG_LEVEL = "log_level"
-    LOG_LOCATION = "log_location"
     PRIVATE_KEY_PATH = "private_key_path"
     PUBLIC_KEY_PATH = "public_key_path"
     ACCESS_TOKEN_VALID_FOR = "access_token_valid_for"  # noqa: S105
