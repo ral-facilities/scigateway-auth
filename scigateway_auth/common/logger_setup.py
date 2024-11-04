@@ -1,28 +1,16 @@
+"""
+Module for setting up and configuring the logging system.
+"""
+
+import logging
 import logging.config
+from pathlib import Path
 
-from scigateway_auth.common.config import Config, get_config_value
-
-logger_config = {
-    "version": 1,
-    "formatters": {
-        "default": {
-            "format": "[%(asctime)s] {%(module)s:%(filename)s:%(funcName)s:"
-            "%(lineno)d} %(levelname)s - %(message)s  ",
-        },
-    },
-    "handlers": {
-        "default": {
-            "level": get_config_value(Config.LOG_LEVEL),
-            "formatter": "default",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": get_config_value(Config.LOG_LOCATION),
-            "maxBytes": 5000000,
-            "backupCount": 10,
-        },
-    },
-    "root": {"level": get_config_value(Config.LOG_LEVEL), "handlers": ["default"]},
-}
+LOGGING_CONFIG_FILE_PATH = Path(__file__).parent.parent / "logging.ini"
 
 
-def setup_logger():
-    logging.config.dictConfig(logger_config)
+def setup_logger() -> None:
+    """
+    Set up the logger using the configuration INI file.
+    """
+    logging.config.fileConfig(LOGGING_CONFIG_FILE_PATH)
