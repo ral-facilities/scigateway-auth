@@ -1,13 +1,17 @@
+"""
+Module for the constants of the application.
+"""
+
 from scigateway_auth.common.config import Config, get_config_value
 
 try:
-    with open(get_config_value(Config.PRIVATE_KEY_PATH), "r") as f:
+    with open(get_config_value(Config.PRIVATE_KEY_PATH), "r", encoding="utf-8") as f:
         PRIVATE_KEY = f.read()
 except FileNotFoundError:
     PRIVATE_KEY = ""
 
 try:
-    with open(get_config_value(Config.PUBLIC_KEY_PATH), "r") as f:
+    with open(get_config_value(Config.PUBLIC_KEY_PATH), "r", encoding="utf-8") as f:
         PUBLIC_KEY = f.read()
 except FileNotFoundError:
     PUBLIC_KEY = ""
@@ -19,5 +23,4 @@ MAINTENANCE_CONFIG_PATH = get_config_value(Config.MAINTENANCE_CONFIG_PATH)
 SCHEDULED_MAINTENANCE_CONFIG_PATH = get_config_value(
     Config.SCHEDULED_MAINTENANCE_CONFIG_PATH,
 )
-SECURE = True
 VERIFY = get_config_value(Config.VERIFY)
