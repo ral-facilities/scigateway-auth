@@ -21,8 +21,8 @@ jobs:
     - name: Add apt repo
       run: sudo add-apt-repository universe
 
-      - name: Create logging configuration file
-        run: cp scigateway_auth/logging.example.ini scigateway_auth/logging.ini
+    - name: Create logging configuration file
+      run: cp scigateway_auth/logging.example.ini scigateway_auth/logging.ini
 
     - name: Create config.json
       run: cp scigateway_auth/config.json.example scigateway_auth/config.json
