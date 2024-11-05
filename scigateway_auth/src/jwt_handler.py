@@ -4,18 +4,13 @@ Module for providing a class for handling JWTs.
 
 from datetime import datetime, timedelta, timezone
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from cryptography.hazmat.primitives import serialization
 import jwt
 
-from scigateway_auth.common.config import Config, get_config_value
-from scigateway_auth.common.constants import (
-    ACCESS_TOKEN_VALID_FOR,
-    PRIVATE_KEY,
-    PUBLIC_KEY,
-    REFRESH_TOKEN_VALID_FOR,
-)
+from scigateway_auth.common.config import config
+from scigateway_auth.common.constants import PRIVATE_KEY, PUBLIC_KEY
 from scigateway_auth.common.exceptions import BlacklistedJWTError, InvalidJWTError, JWTRefreshError
 from scigateway_auth.common.schemas import UserCredentialsPostRequestSchema
 from scigateway_auth.src.authentication import ICATAuthenticator
@@ -40,13 +35,13 @@ class JWTHandler:
         authenticator = ICATAuthenticator()
         session_id = authenticator.authenticate(mnemonic, credentials)
         username = authenticator.get_username(session_id)
-        is_user_admin = username in get_config_value(Config.ADMIN_USERS)
+        is_user_admin = username in config.authentication.admin_users
 
         payload = {
             "sessionId": session_id,
             "username": username,
             "userIsAdmin": is_user_admin,
-            "exp": datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_VALID_FOR),
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=config.authentication.access_token_validity_minutes),
         }
         return self._pack_jwt(payload)
 
@@ -57,7 +52,9 @@ class JWTHandler:
         :return: The signed JWT refresh token.
         """
         logger.info("Getting a refresh token")
-        return self._pack_jwt({"exp": datetime.now(timezone.utc) + timedelta(minutes=REFRESH_TOKEN_VALID_FOR)})
+        return self._pack_jwt(
+            {"exp": datetime.now(timezone.utc) + timedelta(days=config.authentication.refresh_token_validity_days)},
+        )
 
     def refresh_access_token(self, access_token: str, refresh_token: str):
         """
@@ -70,13 +67,15 @@ class JWTHandler:
         """
         logger.info("Refreshing access token")
 
-        if refresh_token in get_config_value(Config.BLACKLIST):
+        if refresh_token in config.authentication.jwt_blacklist:
             raise BlacklistedJWTError(f"Attempted refresh from token in blacklist: {refresh_token}")
 
         self.verify_token(refresh_token)
         try:
             access_token_payload = self._get_jwt_payload(access_token, {"verify_exp": False})
-            access_token_payload["exp"] = datetime.now(timezone.utc) + timedelta(minutes=REFRESH_TOKEN_VALID_FOR)
+            access_token_payload["exp"] = datetime.now(timezone.utc) + timedelta(
+                minutes=config.authentication.access_token_validity_minutes,
+            )
             authenticator = ICATAuthenticator()
             authenticator.refresh(access_token_payload["sessionId"])
             return self._pack_jwt(access_token_payload)
@@ -85,7 +84,7 @@ class JWTHandler:
             logger.exception(message)
             raise JWTRefreshError(message) from exc
 
-    def verify_token(self, token: str) -> Dict[str, Any]:
+    def verify_token(self, token: str) -> dict[str, Any]:
         """
         Verifies that the provided JWT token is valid. It does this by checking that it was signed by the corresponding
         private key and has not expired.
@@ -117,7 +116,7 @@ class JWTHandler:
             "userIsAdmin": is_user_admin,
         }
 
-    def _get_jwt_payload(self, token: str, jwt_decode_options: dict | None = None) -> Dict[str, Any]:
+    def _get_jwt_payload(self, token: str, jwt_decode_options: dict | None = None) -> dict[str, Any]:
         """
         Decodes the provided JWT token and gets its payload.
 
@@ -126,7 +125,12 @@ class JWTHandler:
         :return: The payload from the provided JWT token.
         """
         logger.info("Decoding JWT token")
-        return jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"], options=jwt_decode_options)
+        return jwt.decode(
+            token,
+            PUBLIC_KEY,
+            algorithms=[config.authentication.jwt_algorithm],
+            options=jwt_decode_options,
+        )
 
     def _pack_jwt(self, payload: dict) -> str:
         """
@@ -138,4 +142,4 @@ class JWTHandler:
         logger.debug("Packing payload into a JWT token")
         bytes_key = bytes(PRIVATE_KEY, encoding="utf8")
         loaded_private_key = serialization.load_ssh_private_key(bytes_key, password=None)
-        return jwt.encode(payload, loaded_private_key, algorithm="RS256")
+        return jwt.encode(payload, loaded_private_key, algorithm=config.authentication.jwt_algorithm)

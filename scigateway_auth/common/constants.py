@@ -2,25 +2,20 @@
 Module for the constants of the application.
 """
 
-from scigateway_auth.common.config import Config, get_config_value
+import sys
+
+from scigateway_auth.common.config import config
+
+# Read the contents of the private and public key files into constants. These are used for encoding and decoding of JWT
+# access and refresh tokens.
+try:
+    with open(config.authentication.private_key_path, "r", encoding="utf-8") as file:
+        PRIVATE_KEY = file.read()
+except FileNotFoundError as exc:
+    sys.exit(f"Cannot find private key: {exc}")
 
 try:
-    with open(get_config_value(Config.PRIVATE_KEY_PATH), "r", encoding="utf-8") as f:
-        PRIVATE_KEY = f.read()
-except FileNotFoundError:
-    PRIVATE_KEY = ""
-
-try:
-    with open(get_config_value(Config.PUBLIC_KEY_PATH), "r", encoding="utf-8") as f:
-        PUBLIC_KEY = f.read()
-except FileNotFoundError:
-    PUBLIC_KEY = ""
-
-ICAT_URL = get_config_value(Config.ICAT_URL)
-ACCESS_TOKEN_VALID_FOR = get_config_value(Config.ACCESS_TOKEN_VALID_FOR)
-REFRESH_TOKEN_VALID_FOR = get_config_value(Config.REFRESH_TOKEN_VALID_FOR)
-MAINTENANCE_CONFIG_PATH = get_config_value(Config.MAINTENANCE_CONFIG_PATH)
-SCHEDULED_MAINTENANCE_CONFIG_PATH = get_config_value(
-    Config.SCHEDULED_MAINTENANCE_CONFIG_PATH,
-)
-VERIFY = get_config_value(Config.VERIFY)
+    with open(config.authentication.public_key_path, "r", encoding="utf-8") as file:
+        PUBLIC_KEY = file.read()
+except FileNotFoundError as exc:
+    sys.exit(f"Cannot find public key: {exc}")

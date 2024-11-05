@@ -8,7 +8,7 @@ from typing import Type, Union
 
 from pydantic import ValidationError
 
-from scigateway_auth.common.constants import MAINTENANCE_CONFIG_PATH, SCHEDULED_MAINTENANCE_CONFIG_PATH
+from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import (
     InvalidMaintenanceFileError,
     MaintenanceFileReadError,
@@ -103,7 +103,7 @@ class MaintenanceMode(MaintenanceBase):
         """
         Initialise the base maintenance class.
         """
-        super().__init__(MAINTENANCE_CONFIG_PATH, MaintenanceStateSchema)
+        super().__init__(config.maintenance.maintenance_path, MaintenanceStateSchema)
 
 
 class ScheduledMaintenanceMode(MaintenanceBase):
@@ -116,4 +116,4 @@ class ScheduledMaintenanceMode(MaintenanceBase):
         """
         Initialise the base maintenance class.
         """
-        super().__init__(SCHEDULED_MAINTENANCE_CONFIG_PATH, ScheduledMaintenanceStateSchema)
+        super().__init__(config.maintenance.scheduled_maintenance_path, ScheduledMaintenanceStateSchema)

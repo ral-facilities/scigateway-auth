@@ -20,8 +20,8 @@ from scigateway_auth.common.schemas import (
     ScheduledMaintenancePutRequestSchema,
     ScheduledMaintenanceStateSchema,
 )
-from scigateway_auth.src.maintenance import MaintenanceMode, ScheduledMaintenanceMode
 from scigateway_auth.src.jwt_handler import JWTHandler
+from scigateway_auth.src.maintenance import MaintenanceMode, ScheduledMaintenanceMode
 
 logger = logging.getLogger()
 

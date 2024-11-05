@@ -8,7 +8,7 @@ from typing import Any
 
 import requests
 
-from scigateway_auth.common.constants import ICAT_URL, VERIFY
+from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import ICATAuthenticationError
 from scigateway_auth.common.schemas import UserCredentialsPostRequestSchema
 
@@ -30,7 +30,7 @@ class ICATAuthenticator:
             invalid.
         :return: The ICAT session ID.
         """
-        logger.info("Authenticating at %s with mnemonic: %s", ICAT_URL, mnemonic)
+        logger.info("Authenticating at %s with mnemonic: %s", config.icat_server.url, mnemonic)
         json_payload = (
             {"plugin": "anon"}
             if credentials is None
@@ -44,7 +44,11 @@ class ICATAuthenticator:
         )
         data = {"json": json.dumps(json_payload)}
 
-        response = requests.post(f"{ICAT_URL}/session", data=data, verify=VERIFY)
+        response = requests.post(
+            f"{config.icat_server.url}/session",
+            data=data,
+            verify=config.icat_server.certificate_validation,
+        )
         if response.status_code == 200:
             return response.json()["sessionId"]
         else:
@@ -58,8 +62,11 @@ class ICATAuthenticator:
         :raises ICATAuthenticationError: If there is a problem with the ICAT authenticator or the session ID is invalid.
         :return: The user's username.
         """
-        logger.info("Retrieving username for session ID '%s' at %s", session_id, ICAT_URL)
-        response = requests.get(f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
+        logger.info("Retrieving username for session ID '%s' at %s", session_id, config.icat_server.url)
+        response = requests.get(
+            f"{config.icat_server.url}/session/{session_id}",
+            verify=config.icat_server.certificate_validation,
+        )
         if response.status_code == 200:
             return response.json()["userName"]
         else:
@@ -71,8 +78,11 @@ class ICATAuthenticator:
 
         :return: The list of ICAT authenticator mnemonics and their friendly names.
         """
-        logger.info("Querying ICAT at %s to get its list of mnemonics", ICAT_URL)
-        response = requests.get(f"{ICAT_URL}/properties", verify=VERIFY)
+        logger.info("Querying ICAT at %s to get its list of mnemonics", config.icat_server.url)
+        response = requests.get(
+            f"{config.icat_server.url}/properties",
+            verify=config.icat_server.certificate_validation,
+        )
         properties = response.json()
         return properties["authenticators"]
 
@@ -84,7 +94,10 @@ class ICATAuthenticator:
         :raises ICATAuthenticationError: If there is a problem with the ICAT authenticator or the session ID cannot be
             refreshed.
         """
-        logger.info("Refreshing session ID %s at %s", session_id, ICAT_URL)
-        response = requests.put(f"{ICAT_URL}/session/{session_id}", verify=VERIFY)
+        logger.info("Refreshing session ID %s at %s", session_id, config.icat_server.url)
+        response = requests.put(
+            f"{config.icat_server.url}/session/{session_id}",
+            verify=config.icat_server.certificate_validation,
+        )
         if response.status_code != 204:
             raise ICATAuthenticationError("The session ID was unable to be refreshed")
