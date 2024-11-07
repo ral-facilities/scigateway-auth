@@ -43,6 +43,7 @@ flake8-logging-format = "^1.0.0"
 pep8-naming = "^0.14.1"
 black = "^24.10.0"
 safety = "^3.2.10"
+pytest-env = "^1.1.5"
 
 [tool.poetry.scripts]
 
