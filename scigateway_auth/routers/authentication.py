@@ -13,6 +13,7 @@ from scigateway_auth.common.exceptions import (
     ICATAuthenticationError,
     InvalidJWTError,
     JWTRefreshError,
+    UsernameMismatchError,
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
 from scigateway_auth.src.authentication import ICATAuthenticator
@@ -97,7 +98,7 @@ def refresh_access_token(
     try:
         access_token = jwt_handler.refresh_access_token(token, refresh_token)
         return JSONResponse(content=access_token)
-    except (BlacklistedJWTError, InvalidJWTError, JWTRefreshError) as exc:
+    except (BlacklistedJWTError, InvalidJWTError, JWTRefreshError, UsernameMismatchError) as exc:
         message = "Unable to refresh access token"
         logger.exception(message)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=message) from exc

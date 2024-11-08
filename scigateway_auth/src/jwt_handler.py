@@ -15,6 +15,7 @@ from scigateway_auth.common.exceptions import (
     BlacklistedJWTError,
     InvalidJWTError,
     JWTRefreshError,
+    UsernameMismatchError,
 )
 from scigateway_auth.src.authentication import ICATAuthenticator
 
@@ -52,7 +53,10 @@ class JWTHandler:
         """
         logger.info("Getting a refresh token")
         return self._pack_jwt(
-            {"exp": datetime.now(timezone.utc) + timedelta(days=config.authentication.refresh_token_validity_days)},
+            {
+                "username": icat_username,
+                "exp": datetime.now(timezone.utc) + timedelta(days=config.authentication.refresh_token_validity_days),
+            },
         )
 
     def refresh_access_token(self, access_token: str, refresh_token: str):
@@ -62,6 +66,7 @@ class JWTHandler:
         :param access_token: The JWT access token to refresh.
         :param refresh_token: The JWT refresh token.
         :raises JWTRefreshError: If the JWT access token cannot be refreshed.
+        :raises UsernameMismatchError: If the usernames in the access and refresh tokens do not match
         :return: JWT access token with an updated expiry time.
         """
         logger.info("Refreshing access token")
@@ -69,9 +74,12 @@ class JWTHandler:
         if self._is_refresh_token_blacklisted(refresh_token):
             raise BlacklistedJWTError(f"Attempted refresh from token in blacklist: {refresh_token}")
 
-        self.verify_token(refresh_token)
+        refresh_token_payload = self.verify_token(refresh_token)
         try:
             access_token_payload = self._get_jwt_payload(access_token, {"verify_exp": False})
+            if access_token_payload["username"] != refresh_token_payload["username"]:
+                raise UsernameMismatchError("The usernames in the access and refresh tokens do not match")
+
             access_token_payload["exp"] = datetime.now(timezone.utc) + timedelta(
                 minutes=config.authentication.access_token_validity_minutes,
             )

@@ -45,6 +45,12 @@ class MaintenanceFileWriteError(Exception):
     """
 
 
+class UsernameMismatchError(Exception):
+    """
+    Exception raised when the usernames in the access and refresh tokens do not match.
+    """
+
+
 class UserNotAdminError(Exception):
     """
     Exception raised when a non-admin user performs an action that requires the user to be an admin.
