@@ -20,7 +20,8 @@ class ICATAuthenticator:
     Class for managing authentication against an ICAT authenticator.
     """
 
-    def authenticate(self, mnemonic: str, credentials: UserCredentialsPostRequestSchema = None) -> str:
+    @staticmethod
+    def authenticate(mnemonic: str, credentials: UserCredentialsPostRequestSchema = None) -> str:
         """
         Sends an authentication request to the ICAT authenticator and returns a session ID.
 
@@ -54,13 +55,14 @@ class ICATAuthenticator:
         else:
             raise ICATAuthenticationError(response.json()["message"])
 
-    def get_username(self, session_id: str) -> str:
+    @staticmethod
+    def get_username(session_id: str) -> str:
         """
         Sends a request to ICAT to retrieve the user's username from a session ID.
 
         :param session_id: The session ID of the user who we want to get the username for.
         :raises ICATAuthenticationError: If there is a problem with the ICAT authenticator or the session ID is invalid.
-        :return: The user's username.
+        :return: The user's ICAT username.
         """
         logger.info("Retrieving username for session ID '%s' at %s", session_id, config.icat_server.url)
         response = requests.get(
@@ -72,7 +74,8 @@ class ICATAuthenticator:
         else:
             raise ICATAuthenticationError(response.json()["message"])
 
-    def get_authenticators(self) -> list[dict[str, Any]]:
+    @staticmethod
+    def get_authenticators() -> list[dict[str, Any]]:
         """
         Sends a request to ICAT to get the properties and parses the response to a list of authenticators.
 
@@ -86,7 +89,8 @@ class ICATAuthenticator:
         properties = response.json()
         return properties["authenticators"]
 
-    def refresh(self, session_id: str) -> None:
+    @staticmethod
+    def refresh(session_id: str) -> None:
         """
         Sends a request to ICAT to refresh a session ID.
 

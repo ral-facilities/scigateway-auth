@@ -41,7 +41,7 @@ class MaintenanceBase:
 
     def _get_state_description(self):
         """
-        Returns the state description to be used in logging based on the type of the state schema class.
+        Return the state description to be used in logging based on the type of the state schema class.
 
         :return: The state description to be used in logging.
         """
@@ -53,7 +53,7 @@ class MaintenanceBase:
 
     def get_maintenance_state(self) -> Union[MaintenanceStateSchema, ScheduledMaintenanceStateSchema]:
         """
-        Reads and returns the maintenance state from the file.
+        Read and return the maintenance state from the file.
 
         :raises InvalidMaintenanceFileError: If the maintenance file is incorrectly formatted.
         :raises MaintenanceFileReadError: If the maintenance file cannot be found or read.

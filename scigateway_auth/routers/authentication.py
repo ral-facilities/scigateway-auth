@@ -30,10 +30,10 @@ JWTHandlerDep = Annotated[JWTHandler, Depends(JWTHandler)]
     summary="Get a list of valid ICAT authenticators",
     response_description="Returns a list of valid ICAT authenticators",
 )
-def get_authenticators(authenticator: Annotated[ICATAuthenticator, Depends(ICATAuthenticator)]):
+def get_authenticators():
     logger.info("Getting a list of valid ICAT authenticators")
     try:
-        return authenticator.get_authenticators()
+        return ICATAuthenticator.get_authenticators()
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -55,8 +55,11 @@ def login(
 ) -> JSONResponse:
     logger.info("Authenticating a user")
     try:
-        access_token = jwt_handler.get_access_token(login_details.mnemonic, login_details.credentials)
-        refresh_token = jwt_handler.get_refresh_token()
+        icat_session_id = ICATAuthenticator.authenticate(login_details.mnemonic, login_details.credentials)
+        icat_username = ICATAuthenticator.get_username(icat_session_id)
+
+        access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+        refresh_token = jwt_handler.get_refresh_token(icat_username)
 
         response = JSONResponse(content=access_token)
         response.set_cookie(

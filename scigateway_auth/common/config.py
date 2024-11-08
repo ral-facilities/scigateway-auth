@@ -39,7 +39,8 @@ class AuthenticationConfig(BaseModel):
     jwt_algorithm: str
     access_token_validity_minutes: int
     refresh_token_validity_days: int
-    jwt_blacklist: list[str]
+    jwt_refresh_token_blacklist: list[str]
+    # These are the ICAT usernames of the users normally in the <icat-mnemonic>/<username> form
     admin_users: list[str]
 
 
@@ -79,5 +80,3 @@ class Config(BaseSettings):
 
 
 config = Config()
-print(type(config.icat_server.certificate_validation))
-print(config.icat_server.certificate_validation)

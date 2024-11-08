@@ -4,15 +4,18 @@ Module for providing a class for handling JWTs.
 
 from datetime import datetime, timedelta, timezone
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from cryptography.hazmat.primitives import serialization
 import jwt
 
 from scigateway_auth.common.config import config
 from scigateway_auth.common.constants import PRIVATE_KEY, PUBLIC_KEY
-from scigateway_auth.common.exceptions import BlacklistedJWTError, InvalidJWTError, JWTRefreshError
-from scigateway_auth.common.schemas import UserCredentialsPostRequestSchema
+from scigateway_auth.common.exceptions import (
+    BlacklistedJWTError,
+    InvalidJWTError,
+    JWTRefreshError,
+)
 from scigateway_auth.src.authentication import ICATAuthenticator
 
 logger = logging.getLogger()
@@ -23,32 +26,28 @@ class JWTHandler:
     Class for handling JWTs.
     """
 
-    def get_access_token(self, mnemonic: str, credentials: UserCredentialsPostRequestSchema = None) -> str:
+    def get_access_token(self, icat_session_id: str, icat_username: str) -> str:
         """
-        Generates a payload and returns a signed JWT access token.
+        Generate a payload and return a signed JWT access token.
 
-        :param mnemonic: The ICAT mnemonic.
-        :param credentials: The ICAT credentials.
+        :param icat_session_id: The ICAT session ID.
+        :param icat_username: The user's ICAT username.
         :return: The signed JWT access token.
         """
         logger.info("Getting an access token")
-        authenticator = ICATAuthenticator()
-        session_id = authenticator.authenticate(mnemonic, credentials)
-        username = authenticator.get_username(session_id)
-        is_user_admin = username in config.authentication.admin_users
-
         payload = {
-            "sessionId": session_id,
-            "username": username,
-            "userIsAdmin": is_user_admin,
+            "sessionId": icat_session_id,
+            "username": icat_username,
+            "userIsAdmin": self._is_user_admin(icat_username),
             "exp": datetime.now(timezone.utc) + timedelta(minutes=config.authentication.access_token_validity_minutes),
         }
         return self._pack_jwt(payload)
 
-    def get_refresh_token(self) -> str:
+    def get_refresh_token(self, icat_username: str) -> str:
         """
-        Generates a payload and returns a signed JWT refresh token.
+        Generate a payload and return a signed JWT refresh token.
 
+        :param icat_username: The user's ICAT username.
         :return: The signed JWT refresh token.
         """
         logger.info("Getting a refresh token")
@@ -58,7 +57,7 @@ class JWTHandler:
 
     def refresh_access_token(self, access_token: str, refresh_token: str):
         """
-        Refreshes the JWT access token by updating its expiry time, provided that the JWT refresh token is valid.
+        Refresh the JWT access token by updating its expiry time, provided that the JWT refresh token is valid.
 
         :param access_token: The JWT access token to refresh.
         :param refresh_token: The JWT refresh token.
@@ -67,7 +66,7 @@ class JWTHandler:
         """
         logger.info("Refreshing access token")
 
-        if refresh_token in config.authentication.jwt_blacklist:
+        if self._is_refresh_token_blacklisted(refresh_token):
             raise BlacklistedJWTError(f"Attempted refresh from token in blacklist: {refresh_token}")
 
         self.verify_token(refresh_token)
@@ -76,8 +75,7 @@ class JWTHandler:
             access_token_payload["exp"] = datetime.now(timezone.utc) + timedelta(
                 minutes=config.authentication.access_token_validity_minutes,
             )
-            authenticator = ICATAuthenticator()
-            authenticator.refresh(access_token_payload["sessionId"])
+            ICATAuthenticator.refresh(access_token_payload["sessionId"])
             return self._pack_jwt(access_token_payload)
         except Exception as exc:
             message = "Unable to refresh access token"
@@ -86,7 +84,7 @@ class JWTHandler:
 
     def verify_token(self, token: str) -> dict[str, Any]:
         """
-        Verifies that the provided JWT token is valid. It does this by checking that it was signed by the corresponding
+        Verify that the provided JWT token is valid. Do this by checking that it was signed by the corresponding
         private key and has not expired.
 
         :param token: The JWT token to be verified.
@@ -101,24 +99,10 @@ class JWTHandler:
             logger.exception(message)
             raise InvalidJWTError(message) from exc
 
-    def _create_jwt_payload(self, session_id: str, username: str, is_user_admin: bool) -> dict[str, Any]:
+    @staticmethod
+    def _get_jwt_payload(token: str, jwt_decode_options: Optional[dict] = None) -> dict[str, Any]:
         """
-        Creates a payload for the JWT tokens.
-
-        :param session_id: The ICAT session ID.
-        :param username: The ICAT username.
-        :param is_user_admin: Whether the user is admin.
-        :return: The payload for the JWT token.
-        """
-        return {
-            "sessionId": session_id,
-            "username": username,
-            "userIsAdmin": is_user_admin,
-        }
-
-    def _get_jwt_payload(self, token: str, jwt_decode_options: dict | None = None) -> dict[str, Any]:
-        """
-        Decodes the provided JWT token and gets its payload.
+        Decode the provided JWT token and get its payload.
 
         :param token: The JWT token to decode and get payload from.
         :param jwt_decode_options: Any options to be passed to the `decode` method.
@@ -132,9 +116,32 @@ class JWTHandler:
             options=jwt_decode_options,
         )
 
-    def _pack_jwt(self, payload: dict) -> str:
+    @staticmethod
+    def _is_refresh_token_blacklisted(refresh_token: str) -> bool:
         """
-        Packs the provided payload into a JWT token and signs it.
+        Check if the provided refresh token is in the blacklist configuration to determine whether the token is valid
+        for refreshing access tokens.
+
+        :param refresh_token: The JWT refresh token to be checked.
+        :return: `True` if the refresh token is blacklisted, `False` otherwise.
+        """
+        return refresh_token in config.authentication.jwt_refresh_token_blacklist
+
+    @staticmethod
+    def _is_user_admin(username: str) -> bool:
+        """
+        Check if the provided username is in the list of admin usernames configuration to determine if the user has
+        admin privileges.
+
+        :param username: The username to be checked.
+        :return: `True` if the username is in the list of admin usernames, `False` otherwise.
+        """
+        return username in config.authentication.admin_users
+
+    @staticmethod
+    def _pack_jwt(payload: dict) -> str:
+        """
+        Pack the provided payload into a JWT token and sign it.
 
         :param payload: The payload to be packed.
         :return: The encoded and signed JWT token.
