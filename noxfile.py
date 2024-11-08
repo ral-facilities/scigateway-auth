@@ -44,4 +44,4 @@ def safety(session):
 def tests(session):
     args = session.posargs
     session.run("poetry", "install", "--with=dev", external=True)
-    session.run("pytest", *args)
+    session.run("pytest", "--config-file=test/pytest.ini", *args)
