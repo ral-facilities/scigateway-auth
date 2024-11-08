@@ -24,9 +24,6 @@ jobs:
     - name: Create logging configuration file
       run: cp scigateway_auth/logging.example.ini scigateway_auth/logging.ini
 
-    - name: Create config.json
-      run: cp scigateway_auth/config.json.example scigateway_auth/config.json
-
     - name: Install Nox
       run: pip install nox==2024.10.9
 
