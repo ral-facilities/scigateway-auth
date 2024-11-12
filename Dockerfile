@@ -32,3 +32,12 @@ RUN --mount=type=cache,target=/root/.cache \
 CMD ["fastapi", "dev", "scigateway_auth/main.py", "--host", "0.0.0.0", "--port", "8000"]
 
 EXPOSE 8000
+
+
+FROM dev as test
+
+WORKDIR /app
+
+COPY test/ test/
+
+CMD ["pytest",  "--config-file", "test/pytest.ini", "--cov", "scigateway_auth", "--cov-report", "term-missing", "-v"]
