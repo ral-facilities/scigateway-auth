@@ -8,6 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Cookie, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 
+from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import (
     BlacklistedJWTError,
     ICATAuthenticationError,
@@ -66,11 +67,11 @@ def login(
         response.set_cookie(
             key="scigateway:refresh_token",
             value=refresh_token,
-            max_age=604800,
+            max_age=config.authentication.refresh_token_validity_days * 24 * 60 * 60,
             secure=True,
             httponly=True,
             samesite="lax",
-            path="/refresh",
+            path=f"{config.api.root_path}/refresh",
         )
         return response
     except ICATAuthenticationError as exc:

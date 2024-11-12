@@ -1,6 +1,3 @@
-import os
-import tempfile
-
 import nox
 
 # Separating Black away from the rest of the sessions

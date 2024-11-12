@@ -49,6 +49,7 @@ class ICATAuthenticator:
             f"{config.icat_server.url}/session",
             data=data,
             verify=config.icat_server.certificate_validation,
+            timeout=config.icat_server.request_timeout_seconds,
         )
         if response.status_code == 200:
             return response.json()["sessionId"]
@@ -68,6 +69,7 @@ class ICATAuthenticator:
         response = requests.get(
             f"{config.icat_server.url}/session/{session_id}",
             verify=config.icat_server.certificate_validation,
+            timeout=config.icat_server.request_timeout_seconds,
         )
         if response.status_code == 200:
             return response.json()["userName"]
@@ -85,6 +87,7 @@ class ICATAuthenticator:
         response = requests.get(
             f"{config.icat_server.url}/properties",
             verify=config.icat_server.certificate_validation,
+            timeout=config.icat_server.request_timeout_seconds,
         )
         properties = response.json()
         return properties["authenticators"]
@@ -102,6 +105,7 @@ class ICATAuthenticator:
         response = requests.put(
             f"{config.icat_server.url}/session/{session_id}",
             verify=config.icat_server.certificate_validation,
+            timeout=config.icat_server.request_timeout_seconds,
         )
         if response.status_code != 204:
             raise ICATAuthenticationError("The session ID was unable to be refreshed")

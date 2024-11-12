@@ -54,6 +54,7 @@ class ICATServerConfig(BaseModel):
     # `True` will verify certificates using its internal trust store.
     # `False` will disable certificate validation.
     certificate_validation: bool
+    request_timeout_seconds: int
 
     model_config = ConfigDict(hide_input_in_errors=True)
 
