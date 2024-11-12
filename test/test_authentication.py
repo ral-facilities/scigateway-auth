@@ -97,6 +97,7 @@ class TestICATAuthenticator:
         mock_put.assert_called_once_with(
             f"{config.icat_server.url}/session/{self.session_id}",
             verify=config.icat_server.certificate_validation,
+            timeout=config.icat_server.request_timeout_seconds,
         )
 
     @patch("requests.put")
