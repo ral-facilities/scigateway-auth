@@ -5,7 +5,8 @@ Module for providing an API router which defines the maintenance routes.
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 
 from scigateway_auth.common.exceptions import (
     InvalidJWTError,
@@ -68,12 +69,12 @@ def get_maintenance_state(maintenance_mode: MaintenanceModeDep) -> MaintenanceSt
 def update_maintenance_state(
     maintenance_mode: MaintenanceModeDep,
     maintenance: MaintenancePutRequestSchema,
-) -> Response:
+) -> JSONResponse:
     logger.info("Updating maintenance state")
     try:
         _verify_user_is_admin(maintenance.token)
         maintenance_mode.update_maintenance_state(maintenance.maintenance)
-        return Response(status_code=status.HTTP_200_OK)
+        return JSONResponse(status_code=status.HTTP_200_OK, content="Maintenance state successfully updated")
     except (InvalidJWTError, UserNotAdminError) as exc:
         message = "Unable to update maintenance state"
         logger.exception(message)
@@ -111,12 +112,12 @@ def get_scheduled_maintenance_state(
 def update_scheduled_maintenance_state(
     scheduled_maintenance_mode: ScheduledMaintenanceModeDep,
     scheduled_maintenance: ScheduledMaintenancePutRequestSchema,
-) -> Response:
+) -> JSONResponse:
     logger.info("Updating scheduled maintenance state")
     try:
         _verify_user_is_admin(scheduled_maintenance.token)
         scheduled_maintenance_mode.update_maintenance_state(scheduled_maintenance.scheduled_maintenance)
-        return Response(status_code=status.HTTP_200_OK)
+        return JSONResponse(status_code=status.HTTP_200_OK, content="Scheduled maintenance state successfully updated")
     except (InvalidJWTError, UserNotAdminError) as exc:
         message = "Unable to update scheduled maintenance state"
         logger.exception(message)
