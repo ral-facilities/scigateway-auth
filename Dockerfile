@@ -20,7 +20,6 @@ WORKDIR /app
 COPY --from=base /app/requirements-*.txt ./
 COPY scigateway_auth/ scigateway_auth/
 COPY maintenance/ maintenance/
-COPY keys/ keys/
 
 RUN --mount=type=cache,target=/root/.cache \
     set -eux; \
