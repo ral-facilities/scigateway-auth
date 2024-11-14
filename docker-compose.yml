@@ -6,7 +6,8 @@ services:
       target: dev
     volumes:
       - ./scigateway_auth:/app/scigateway_auth
-      - ./keys:/app/keys
+      - ./keys/jwt-key:/app/keys/jwt-key
+      - ./keys/jwt-key.pub:/app/keys/jwt-key.pub
       - ./maintenance/maintenance.json:/app/maintenance/maintenance.json
       - ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json
     ports:
