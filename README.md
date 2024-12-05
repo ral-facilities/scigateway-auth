@@ -169,6 +169,16 @@ refresh token from the blacklist by adding or removing the token from the enviro
 application/container to be restarted in order for them to take effect. This is because the values for the environment
 variable gets loaded once at startup.
 
+### How to add or remove an admin user
+
+The `AUTHENTICATION__ADMIN_USERS` environment variable holds the list of admin users which are the ICAT usernames of
+the users normally in the `<icat-mnemonic>/<username>` form. This means that you can add or remove an admin user by
+adding or removing their username environment variable.
+
+**PLEASE NOTE** Changes made to the `AUTHENTICATION__ADMIN_USERS` environment variable require the application/container
+to be restarted in order for them to take effect. This is because the values for the environment variable gets loaded
+once at startup.
+
 ### How to update maintenance or scheduled maintenance state
 
 The `maintenance` folder at the root of the project directory contains two json files which return the appropriate state
