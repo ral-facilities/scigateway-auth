@@ -9,7 +9,7 @@ import pytest
 from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import ICATServerError, InvalidCredentialsError
 from scigateway_auth.common.schemas import UserCredentialsPostRequestSchema
-from scigateway_auth.src.authentication import ICATClient
+from scigateway_auth.src.icat_client import ICATClient
 
 
 class TestICATClient:

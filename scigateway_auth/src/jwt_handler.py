@@ -17,7 +17,7 @@ from scigateway_auth.common.exceptions import (
     JWTRefreshError,
     UsernameMismatchError,
 )
-from scigateway_auth.src.authentication import ICATClient
+from scigateway_auth.src.icat_client import ICATClient
 
 logger = logging.getLogger()
 
