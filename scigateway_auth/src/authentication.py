@@ -128,6 +128,22 @@ class ICATClient:
         return ICATClient._fetch_ids_by_query(session_id, query)
 
     @staticmethod
+    def get_user_investigation_ids(session_id: str, username: str) -> list[int]:
+        """
+        Get the IDs of the investigations where the user is an investigation user.
+
+        :param session_id: The session ID of the user to use when querying ICAT.
+        :param username: The user's ICAT username.
+        """
+        # The username here comes directly from ICAT rather than a user's input. The ICAT server also defends against
+        # SQL injections.
+        query = (
+            "SELECT i.id FROM Investigation i JOIN i.investigationUsers as iu JOIN iu.user u "  # noqa: S608
+            f"WHERE u.name = {username!r}"
+        )
+        return ICATClient._fetch_ids_by_query(session_id, query)
+
+    @staticmethod
     def _fetch_ids_by_query(session_id: str, query: str) -> list[int]:
         """
         Sends a request to ICAT to get the entity IDs specified in the provided query.
