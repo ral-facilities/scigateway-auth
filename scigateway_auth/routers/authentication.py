@@ -61,11 +61,13 @@ def login(
         icat_session_id = ICATClient.authenticate(login_details.mnemonic, login_details.credentials)
         icat_username = ICATClient.get_username(icat_session_id)
         icat_user_instrument_ids = ICATClient.get_user_instrument_ids(icat_session_id, icat_username)
+        icat_user_investigation_ids = ICATClient.get_user_investigation_ids(icat_session_id, icat_username)
 
         access_token = jwt_handler.get_access_token(
             icat_session_id,
             icat_username,
             icat_user_instrument_ids,
+            icat_user_investigation_ids,
         )
         refresh_token = jwt_handler.get_refresh_token(icat_username)
 

@@ -32,6 +32,7 @@ class JWTHandler:
         icat_session_id: str,
         icat_username: str,
         icat_user_instrument_ids: list[int],
+        icat_user_investigation_ids: list[int],
     ) -> str:
         """
         Generate a payload and return a signed JWT access token.
@@ -39,11 +40,13 @@ class JWTHandler:
         :param icat_session_id: The ICAT session ID.
         :param icat_username: The user's ICAT username.
         :param icat_user_instrument_ids: The IDs of the instruments where the user is an instrument scientist.
+        :param icat_user_investigation_ids: The IDs of the investigations where the user is an investigation user.
         :return: The signed JWT access token.
         """
         logger.info("Getting an access token")
         payload = {
             "instruments": icat_user_instrument_ids,
+            "investigations": icat_user_investigation_ids,
             "sessionId": icat_session_id,
             "username": icat_username,
             "userIsAdmin": self._is_user_admin(icat_username),
