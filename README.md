@@ -6,7 +6,7 @@
 This is a Python microservice created using FastAPI that provides an Authentication REST API for the SciGateway web
 application.
 
-## How to Run Locally
+## How to Run
 
 This microservice requires an ICAT server to run against.
 
@@ -47,14 +47,13 @@ Ensure that Docker is installed and running on your machine before proceeding.
 #### Using `docker-compose.yml` for local development
 
 The easiest way to run the application with Docker for local development is using the `docker-compose.yml` file. It is
-configured to mount the `scigateway_auth` directory to the container via a volume which means that FastAPI will watch
-for changes made to the code and automatically reload the application on the fly. This is useful as you do not have to
-rebuild the image and start the container again each time you make a change.
+configured to start the application in a reload mode which using the mounted `scigateway_auth` directory means that
+FastAPI will watch for changes moade to the code and automatically reload the application on the fly.
 
 1. Build and start the Docker container:
 
    ```bash
-   docker-compose up
+   docker compose up
    ```
    The microservice should now be running inside Docker at http://localhost:8000 and its Swagger UI could be accessed
    at http://localhost:8000/docs.
@@ -63,8 +62,7 @@ rebuild the image and start the container again each time you make a change.
 
 Use the `Dockerfile`'s `dev` stage to run just the application itself in a container. Use this only for local
 development (not production)! Mounting the `scigateway_auth` directory to the container via a volume means that FastAPI
-will watch for changes made to the code and automatically reload the application on the fly. This is useful as you do
-not have to rebuild the image and start the container again each time you make a change.
+will watch for changes made to the code and automatically reload the application on the fly.
 
 1. Build an image using the `Dockerfile`'s `dev` stage from the root of the project directory:
 
@@ -75,13 +73,30 @@ not have to rebuild the image and start the container again each time you make a
 2. Start the container using the image built and map it to port `8000` locally:
 
    ```bash
-   docker run --publish 8000:8000 --name scigateway-auth --volume ./scigateway_auth:/app/scigateway_auth --volume ./keys/jwt-key:/app/keys/jwt-key --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json scigateway-auth:dev
+   docker run \
+    --publish 8000:8000 \
+    --name scigateway-auth \
+    --volume ./scigateway_auth:/app/scigateway_auth \
+    --volume ./keys/jwt-key:/app/keys/jwt-key \
+    --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub \
+    --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json \
+    --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json \
+    scigateway-auth:dev
    ```
 
    or with values for the environment variables:
 
    ```bash
-   docker run --publish 8000:8000 --name scigateway-auth --env AUTHENTICATION__REFRESH_TOKEN_VALIDITY_DAYS=14 --volume ./scigateway_auth:/app/scigateway_auth --volume ./keys/jwt-key:/app/keys/jwt-key --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json scigateway-auth:dev
+   docker run \
+    --publish 8000:8000 \
+    --name scigateway-auth \
+    --env AUTHENTICATION__REFRESH_TOKEN_VALIDITY_DAYS=14 \
+    --volume ./scigateway_auth:/app/scigateway_auth \
+    --volume ./keys/jwt-key:/app/keys/jwt-key \
+    --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub \
+    --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json \
+    --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json \
+    scigateway-auth:dev
    ```
 
    The microservice should now be running inside Docker at http://localhost:8000 and its Swagger UI could be accessed
@@ -91,8 +106,7 @@ not have to rebuild the image and start the container again each time you make a
 
 Use the `Dockerfile`'s `test` stage to run the tests in a container. Mounting the `scigateway_auth` and `test`
 directories to the container via volumes means that any changes made to the application or test code will automatically
-be synced to the container next time you run the tests. This is useful as you do not have to rebuild the image each
-time you make a change.
+be synced to the container next time you run the tests.
 
 1. Build an image using the `Dockerfile`'s `test` stage from the root of the project directory:
 
@@ -103,7 +117,12 @@ time you make a change.
 2. Run the tests using:
 
    ```bash
-   docker run --rm --name scigateway-auth --volume ./scigateway_auth:/app/scigateway_auth --volume ./test:/app/test scigateway-auth:test
+   docker run \
+    --rm \
+    --name scigateway-auth \
+    --volume ./scigateway_auth:/app/scigateway_auth \
+    --volume ./test:/app/test \
+    scigateway-auth:test
    ```
 
 ### Outside of Docker

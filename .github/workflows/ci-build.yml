@@ -21,9 +21,12 @@ jobs:
 
     - name: Run tests
       run: |
-        docker build -f Dockerfile -t scigateway-auth:test --target test .
-        docker run --name scigateway-auth-container scigateway-auth:test pytest --config-file test/pytest.ini --cov scigateway_auth --cov-report xml
-        docker cp scigateway-auth-container:/app/coverage.xml coverage.xml
+        docker build --file Dockerfile --target test --tag scigateway-auth:test .
+        docker run \
+         --name scigateway-auth \
+         scigateway-auth:test \
+         pytest --config-file test/pytest.ini --cov scigateway_auth --cov-report xml test/ -v
+        docker cp scigateway-auth:/app/coverage.xml coverage.xml
 
     - name: Upload code coverage report
       uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # v3.1.4
