@@ -1,0 +1,15 @@
+services:
+  scigateway-auth:
+    container_name: scigateway-auth
+    build:
+      context: .
+      target: dev
+    volumes:
+      - ./scigateway_auth:/app/scigateway_auth
+      - ./keys/jwt-key:/app/keys/jwt-key
+      - ./keys/jwt-key.pub:/app/keys/jwt-key.pub
+      - ./maintenance/maintenance.json:/app/maintenance/maintenance.json
+      - ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json
+    ports:
+      - 8000:8000
+    restart: on-failure

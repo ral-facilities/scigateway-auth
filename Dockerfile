@@ -1,68 +1,65 @@
-# Dockerfile to build and serve scigateway-auth
+FROM python:3.11.10-alpine3.20@sha256:f089154eb2546de825151b9340a60d39e2ba986ab17aaffca14301b0b961a11c as base
 
-# Build stage
-FROM python:3.11-alpine3.17 as builder
+WORKDIR /app
 
-WORKDIR /scigateway-auth-build
-
-COPY README.md poetry.lock pyproject.toml ./
-COPY scigateway_auth/ scigateway_auth/
+COPY poetry.lock pyproject.toml ./
 
 RUN --mount=type=cache,target=/root/.cache \
     set -eux; \
     \
-    python3 -m pip install 'poetry~=1.3.2'; \
-    poetry build;
+    pip install --no-cache-dir 'poetry~=1.8.4'; \
+    \
+    poetry export --only dev --format requirements.txt --without-hashes --output requirements-dev.txt; \
+    poetry export --without dev --format requirements.txt --without-hashes --output requirements-prod.txt;
 
 
-# Install & run stage
-FROM python:3.11-alpine3.17
+FROM python:3.11.10-alpine3.20@sha256:f089154eb2546de825151b9340a60d39e2ba986ab17aaffca14301b0b961a11c as dev
 
-WORKDIR /scigateway-auth-run
+WORKDIR /app
 
-COPY --from=builder /scigateway-auth-build/dist/scigateway_auth-*.whl /tmp/
+COPY --from=base /app/requirements-*.txt ./
+COPY scigateway_auth/ scigateway_auth/
 COPY maintenance/ maintenance/
 
 RUN --mount=type=cache,target=/root/.cache \
     set -eux; \
     \
-    apk add --no-cache openssh-keygen; \
-    python3 -m pip install \
-        'gunicorn~=20.1.0' \
-        /tmp/scigateway_auth-*.whl; \
+    apk add --no-cache gcc musl-dev linux-headers python3-dev; \
     \
-    # Create a symlink to the installed python module \
-    SCIGATEWAY_AUTH_LOCATION="$(python3 -m pip show scigateway_auth | awk '/^Location:/ { print $2 }')"; \
-    ln -s "$SCIGATEWAY_AUTH_LOCATION/scigateway_auth/" scigateway_auth; \
+    pip install --no-cache-dir --requirement requirements-dev.txt --requirement requirements-prod.txt;
+
+CMD ["fastapi", "dev", "scigateway_auth/main.py", "--host", "0.0.0.0", "--port", "8000"]
+
+EXPOSE 8000
+
+
+FROM dev as test
+
+WORKDIR /app
+
+COPY test/ test/
+
+CMD ["pytest",  "--config-file", "test/pytest.ini", "--cov", "scigateway_auth", "--cov-report", "term-missing", "-v"]
+
+
+FROM python:3.11.10-alpine3.20@sha256:f089154eb2546de825151b9340a60d39e2ba986ab17aaffca14301b0b961a11c as prod
+
+WORKDIR /app
+
+COPY --from=base /app/requirements-prod.txt ./
+COPY scigateway_auth/ scigateway_auth/
+
+RUN --mount=type=cache,target=/root/.cache \
+    set -eux; \
     \
-    # Create config.json from its .example file \
-    cp scigateway_auth/config.json.example scigateway_auth/config.json; \
-    \
-    # Create directory for JWT keys (they will be generated in the entrypoint script) \
-    mkdir keys; \
-    chmod 0700 keys; \
+    pip install --no-cache-dir --requirement requirements-prod.txt; \
     \
     # Create a non-root user to run as \
-    addgroup -S scigateway-auth; \
-    adduser -S -D -G scigateway-auth -H -h /scigateway-auth-run scigateway-auth; \
-    \
-    # Change ownership of maintenance/ - it needs to be writable at runtime \
-    # Change ownership of keys/ and config.json - the entrypoint script will need to edit them \
-    chown -R scigateway-auth:scigateway-auth keys/ maintenance/ scigateway_auth/config.json;
+    addgroup -g 500 -S scigateway-auth; \
+    adduser -S -D -G scigateway-auth -H -u 500 -h /app scigateway-auth;
 
 USER scigateway-auth
 
-ENV ICAT_URL="http://localhost"
-ENV LOG_LOCATION="/dev/stdout"
-ENV PRIVATE_KEY_PATH="keys/jwt-key"
-ENV PUBLIC_KEY_PATH="keys/jwt-key.pub"
-ENV MAINTENANCE_CONFIG_PATH="maintenance/maintenance.json"
-ENV SCHEDULED_MAINTENANCE_CONFIG_PATH="maintenance/scheduled_maintenance.json"
-ENV VERIFY="true"
+CMD ["fastapi", "run", "scigateway_auth/main.py", "--host", "0.0.0.0", "--port", "8000"]
 
-COPY docker/docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
-
-# Serve the application using gunicorn - production ready WSGI server
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "scigateway_auth.wsgi"]
 EXPOSE 8000

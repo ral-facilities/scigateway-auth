@@ -3,8 +3,10 @@
 select = A,B,B9,BLK,C,E,F,I,N,S,W
 ignore = E501,W503
 max-complexity = 17
-max-line-length = 80
+max-line-length = 120
 application-import-names = scigateway_auth,test
 import-order-style = google
-per-file-ignores = test/testutils.py:S105,B950,test/test_authenticationHandler.py:S105,scigateway_auth/wsgi.py:E402,F401
+per-file-ignores =
+    test/**.py:S101
+    test/mock_data.py:S105
 enable-extensions=G

@@ -1,50 +1,83 @@
-from enum import Enum
-import json
+"""
+Module for the overall configuration for the application.
+"""
+
 from pathlib import Path
-import sys
+from typing import List
+
+from pydantic import BaseModel, ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Config(Enum):
-    HOST = "host"
-    PORT = "port"
-    DEBUG_MODE = "debug_mode"
-    ICAT_URL = "icat_url"
-    LOG_LEVEL = "log_level"
-    LOG_LOCATION = "log_location"
-    PRIVATE_KEY_PATH = "private_key_path"
-    PUBLIC_KEY_PATH = "public_key_path"
-    ACCESS_TOKEN_VALID_FOR = "access_token_valid_for"  # noqa: S105
-    REFRESH_TOKEN_VALID_FOR = "refresh_token_valid_for"  # noqa: S105
-    BLACKLIST = "blacklist"
-    ADMIN_USERS = "admin_users"
-    MAINTENANCE_CONFIG_PATH = "maintenance_config_path"
-    SCHEDULED_MAINTENANCE_CONFIG_PATH = "scheduled_maintenance_config_path"
-    VERIFY = "verify"
-
-
-def _load_config():
+class APIConfig(BaseModel):
     """
-    Loads config values from the JSON config file. Exits the application if it
-    fails to locate/ read the contents of the file.
-    :return: config values in form of a dictionary
+    Configuration model for the API.
     """
-    try:
-        with open(Path(__file__).parent.parent / "config.json") as target:
-            return json.load(target)
-    except IOError:
-        sys.exit("Error loading config file")
+
+    root_path: str = ""  # (If using a proxy) The path prefix handled by a proxy that is not seen by the app.
+    allowed_cors_headers: List[str]
+    allowed_cors_origins: List[str]
+    allowed_cors_methods: List[str]
 
 
-def get_config_value(config):
+class MaintenanceConfig(BaseModel):
     """
-    Given a Config enum, it returns a config value. Reloads the values from the
-    config file so that a restart of the application is not required for config
-    changes to take effect. Exits the application if the provided enum is not in
-    the config dictionary.
-    :return: config value
+    Configuration model for maintenance
     """
-    config_values = _load_config()
-    try:
-        return config_values[config.value]
-    except KeyError:
-        sys.exit("Missing config value, %s" % config.value)
+
+    maintenance_path: str
+    scheduled_maintenance_path: str
+
+
+class AuthenticationConfig(BaseModel):
+    """
+    Configuration model for the authentication.
+    """
+
+    private_key_path: str
+    public_key_path: str
+    jwt_algorithm: str
+    access_token_validity_minutes: int
+    refresh_token_validity_days: int
+    jwt_refresh_token_blacklist: list[str]
+    # These are the ICAT usernames of the users normally in the <icat-mnemonic>/<username> form
+    admin_users: list[str]
+
+
+class ICATServerConfig(BaseModel):
+    """
+    Configuration model for the ICAT server.
+    """
+
+    url: str
+    # The certificate validation corresponds to what is supplied to the `request` calls to the ICAT server.
+    # `True` will verify certificates using its internal trust store.
+    # `False` will disable certificate validation.
+    certificate_validation: bool
+    request_timeout_seconds: int
+
+    model_config = ConfigDict(hide_input_in_errors=True)
+
+
+class Config(BaseSettings):
+    """
+    Overall configuration model for the application.
+
+    It includes attributes for the API, authentication, and LDAP server configurations. The class inherits from
+    `BaseSettings` and automatically reads environment variables. If values are not passed in form of system environment
+    variables at runtime, it will attempt to read them from the .env file.
+    """
+
+    api: APIConfig
+    authentication: AuthenticationConfig
+    icat_server: ICATServerConfig
+    maintenance: MaintenanceConfig
+
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).parent.parent / ".env",
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+    )
+
+
+config = Config()
