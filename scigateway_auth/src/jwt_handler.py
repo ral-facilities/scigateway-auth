@@ -17,7 +17,7 @@ from scigateway_auth.common.exceptions import (
     JWTRefreshError,
     UsernameMismatchError,
 )
-from scigateway_auth.src.authentication import ICATAuthenticator
+from scigateway_auth.src.icat_client import ICATClient
 
 logger = logging.getLogger()
 
@@ -27,16 +27,26 @@ class JWTHandler:
     Class for handling JWTs.
     """
 
-    def get_access_token(self, icat_session_id: str, icat_username: str) -> str:
+    def get_access_token(
+        self,
+        icat_session_id: str,
+        icat_username: str,
+        icat_user_instrument_ids: list[int],
+        icat_user_investigation_ids: list[int],
+    ) -> str:
         """
         Generate a payload and return a signed JWT access token.
 
         :param icat_session_id: The ICAT session ID.
         :param icat_username: The user's ICAT username.
+        :param icat_user_instrument_ids: The IDs of the instruments where the user is an instrument scientist.
+        :param icat_user_investigation_ids: The IDs of the investigations where the user is an investigation user.
         :return: The signed JWT access token.
         """
         logger.info("Getting an access token")
         payload = {
+            "instruments": icat_user_instrument_ids,
+            "investigations": icat_user_investigation_ids,
             "sessionId": icat_session_id,
             "username": icat_username,
             "userIsAdmin": self._is_user_admin(icat_username),
@@ -83,7 +93,7 @@ class JWTHandler:
             access_token_payload["exp"] = datetime.now(timezone.utc) + timedelta(
                 minutes=config.authentication.access_token_validity_minutes,
             )
-            ICATAuthenticator.refresh(access_token_payload["sessionId"])
+            ICATClient.refresh(access_token_payload["sessionId"])
             return self._pack_jwt(access_token_payload)
         except Exception as exc:
             message = "Unable to refresh access token"

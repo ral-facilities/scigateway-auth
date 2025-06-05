@@ -9,7 +9,7 @@ import pytest
 
 from scigateway_auth.common.exceptions import (
     BlacklistedJWTError,
-    ICATAuthenticationError,
+    ICATServerError,
     InvalidJWTError,
     JWTRefreshError,
 )
@@ -32,6 +32,8 @@ class TestJWTHandler:
 
     icat_username = "test-username"
     icat_session_id = "test-session-id"
+    icat_user_instrument_ids = [1, 3, 5]
+    icat_user_investigation_ids = [2, 4, 6, 8, 10]
     mock_icat_authenticator: Mock
     jwt_handler = JWTHandler()
 
@@ -50,7 +52,12 @@ class TestJWTHandler:
         """
         mock_datetime.now.return_value = self.mock_datetime_now()
 
-        access_token = self.jwt_handler.get_access_token(self.icat_session_id, self.icat_username)
+        access_token = self.jwt_handler.get_access_token(
+            self.icat_session_id,
+            self.icat_username,
+            self.icat_user_instrument_ids,
+            self.icat_user_investigation_ids,
+        )
 
         assert access_token == EXPECTED_ACCESS_TOKEN_NON_ADMIN
 
@@ -62,7 +69,12 @@ class TestJWTHandler:
         """
         mock_datetime.now.return_value = self.mock_datetime_now()
 
-        access_token = self.jwt_handler.get_access_token(self.icat_session_id, self.icat_username)
+        access_token = self.jwt_handler.get_access_token(
+            self.icat_session_id,
+            self.icat_username,
+            self.icat_user_instrument_ids,
+            self.icat_user_investigation_ids,
+        )
 
         assert access_token == EXPECTED_ACCESS_TOKEN_ADMIN
 
@@ -77,7 +89,7 @@ class TestJWTHandler:
 
         assert refresh_token == EXPECTED_REFRESH_TOKEN
 
-    @patch("scigateway_auth.src.jwt_handler.ICATAuthenticator.refresh", return_value=None)
+    @patch("scigateway_auth.src.jwt_handler.ICATClient.refresh", return_value=None)
     @patch("scigateway_auth.src.jwt_handler.datetime")
     def test_refresh_access_token(self, mock_datetime, mock_icat_authenticator_refresh):
         """
@@ -127,21 +139,22 @@ class TestJWTHandler:
         usernames.
         """
         access_token = (
-            "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiJ0ZXN0LXNlc3Npb24taWQiLCJ1c2VybmFtZSI6InVzZXIxMjMiL"  # noqa: S105
-            "CJ1c2VySXNBZG1pbiI6ZmFsc2UsImV4cCI6MTcwNTQ4NzQwMH0.J0ygnF1volh5cWl2xRLt1jahh1IAzYBDdXY5KN0IGpA_egAPXMiFjkF"
-            "EJYrFacz-1AA_NTU2cdHiKNpmPwqj_WxGDfe9eU6snhJSjQgLfPrs-Yd9DQpWEjYeA73gj6MW72qy44uBVd4BeqHYWGWbgRLwgb-l7WrYJ"
-            "zAd_AzTpn3-WCIgNXGp08o4fJ9d36YZQVRnAzKgYeBIMX13lFRXE0A1Roscjj94xG0EqTqLGwqngs2kbdFPT0vVmUMJeXeSEiIhZoDx3eB"
-            "jTcZnMEOqUODI9y8OKWq5csIT4L5HYrv0_5SR78BM4uv8-9E_Lqvsw64wN35fZ8EI-_gWwJ0qqA"
+            "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpbnN0cnVtZW50cyI6WzEsMyw1XSwiaW52ZXN0aWdhdGlvbnMiOlsyLDQsNiw4LDEwX"  # noqa: S105
+            "Swic2Vzc2lvbklkIjoidGVzdC1zZXNzaW9uLWlkIiwidXNlcm5hbWUiOiJ1c2VyMTIzIiwidXNlcklzQWRtaW4iOmZhbHNlLCJleHAiOjE"
+            "3MDU0ODc0MDB9.n56minEdsNrST1_GWLiBqOOeRy5Tj6G39o1fP2dbMYNTLAmH_JuBcly_NPkNb7YQ6WM5c3B1qb7qUyDWfEKRTTtNzMOe"
+            "9eVBvE8Uvyffg8kk1QZJQ3VDAnSw_bED4h3CftUQk_At6nLPgiJmAqjsvB1mSakbRe0gJfEEawIiKHZcSdti4YdcBO11IHcig_NoH_4-kB"
+            "QnzJNQi65TquL9oLXJXA1QQ_nEGpPg2Jv3Q6a5HH9LNHu7DT6OBOiM3LGGTzyAmGVtrTRI4r0soE9ndFZ7a7A1pnxszzroA92XhxppAeI6"
+            "baWXxAongEJ8vZI2gCqiLdkE1F-5tryc9y_TYw"
         )
 
         with pytest.raises(JWTRefreshError) as exc:
             self.jwt_handler.refresh_access_token(access_token, VALID_REFRESH_TOKEN)
         assert str(exc.value) == "Unable to refresh access token"
 
-    @patch("scigateway_auth.src.jwt_handler.ICATAuthenticator.refresh", side_effect=ICATAuthenticationError)
+    @patch("scigateway_auth.src.jwt_handler.ICATClient.refresh", side_effect=ICATServerError)
     def test_refresh_access_token_icat_authenticator_refresh_failure(self, mock_icat_authenticator_refresh):
         """
-        Test that `refresh_access_token` raises `JWTRefreshError` when `ICATAuthenticator.refresh` fails.
+        Test that `refresh_access_token` raises `JWTRefreshError` when `ICATClient.refresh` fails.
         """
         with pytest.raises(JWTRefreshError) as exc:
             self.jwt_handler.refresh_access_token(EXPIRED_ACCESS_TOKEN_NON_ADMIN, VALID_REFRESH_TOKEN)
@@ -155,6 +168,8 @@ class TestJWTHandler:
 
         assert payload == {
             "sessionId": self.icat_session_id,
+            "instruments": self.icat_user_instrument_ids,
+            "investigations": self.icat_user_investigation_ids,
             "username": self.icat_username,
             "userIsAdmin": False,
             "exp": 253402300799,
