@@ -109,3 +109,41 @@ class ICATAuthenticator:
         )
         if response.status_code != 204:
             raise ICATAuthenticationError("The session ID was unable to be refreshed")
+
+
+class OIDC_ICATAuthenticator(ICATAuthenticator):
+
+    @staticmethod
+    def authenticate(mechanism: str, username: str) -> str:
+        """
+        Sends an authentication request to the ICAT authenticator and returns a session ID.
+
+        :param mechanism: The mechanism to authenticate.
+        :param username: The ICAT credentials to authenticate with.
+        :raises ICATAuthenticationError: If there is a problem with the ICAT authenticator or the login details are invalid.
+        :return: The ICAT session ID.
+        """
+
+        mnemonic = config.authentication.oidc_icat_authenticator
+
+        logger.info("Authenticating at %s with mnemonic: %s", config.icat_server.url, mnemonic)
+        json_payload = {
+            "plugin": mnemonic,
+            "credentials": [
+                {"mechanism": mechanism},
+                {"username": username},
+                {"token": config.authentication.oidc_icat_authenticator_token}
+            ]
+        }
+        data = {"json": json.dumps(json_payload)}
+
+        response = requests.post(
+            f"{config.icat_server.url}/session",
+            data=data,
+            verify=config.icat_server.certificate_validation,
+            timeout=config.icat_server.request_timeout_seconds,
+        )
+        if response.status_code == 200:
+            return response.json()["sessionId"]
+        else:
+            raise ICATAuthenticationError(response.json()["message"])
