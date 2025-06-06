@@ -7,6 +7,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Cookie, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import (
@@ -17,8 +18,9 @@ from scigateway_auth.common.exceptions import (
     UsernameMismatchError,
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
-from scigateway_auth.src.authentication import ICATAuthenticator
+from scigateway_auth.src.authentication import ICATAuthenticator, OIDC_ICATAuthenticator
 from scigateway_auth.src.jwt_handler import JWTHandler
+from scigateway_auth.src.oidc_handler import OidcHandler
 
 logger = logging.getLogger()
 
@@ -43,6 +45,17 @@ def get_authenticators():
         ) from exc
 
 
+@router.get(
+    path="/oidc_providers",
+    summary="Get a list of OIDC providers",
+    response_description="Returns a list of OIDC providers",
+)
+def get_oidc_providers():
+    logger.info("Getting a list of OIDC prociders")
+
+    return [ {"display_name": p.display_name, "configuration_url": p.configuration_url, "client_id": p.client_id } for p in config.authentication.oidc_providers.values() ]
+
+
 @router.post(
     path="/login",
     summary="Login with ICAT mnemonic and credentials",
@@ -59,6 +72,49 @@ def login(
     try:
         icat_session_id = ICATAuthenticator.authenticate(login_details.mnemonic, login_details.credentials)
         icat_username = ICATAuthenticator.get_username(icat_session_id)
+
+        access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+        refresh_token = jwt_handler.get_refresh_token(icat_username)
+
+        response = JSONResponse(content=access_token)
+        response.set_cookie(
+            key="scigateway:refresh_token",
+            value=refresh_token,
+            max_age=config.authentication.refresh_token_validity_days * 24 * 60 * 60,
+            secure=True,
+            httponly=True,
+            samesite="lax",
+            path=f"{config.api.root_path}/refresh",
+        )
+        return response
+    except ICATAuthenticationError as exc:
+        logger.exception(exc.args)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+
+
+@router.post(
+    path="/oidc_login",
+    summary="Login with an OIDC id token",
+    response_description="A JWT access token including a refresh token as an HTTP-only cookie",
+)
+def oidc_login(
+    jwt_handler: JWTHandlerDep,
+    oidc_handler: Annotated[OidcHandler, Depends(OidcHandler)],
+    bearer_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer(description="OIDC id token"))]
+) -> JSONResponse:
+    logger.info("Authenticating a user")
+
+    encoded_token = bearer_token.credentials
+
+    try:
+        mechanism, oidc_username = oidc_handler.handle(encoded_token)
+    except InvalidJWTError as exc:
+        logger.exception(exc.args)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+
+    try:
+        icat_session_id = OIDC_ICATAuthenticator.authenticate(mechanism, oidc_username)
+        icat_username = OIDC_ICATuthenticator.get_username(icat_session_id)
 
         access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
         refresh_token = jwt_handler.get_refresh_token(icat_username)
