@@ -19,7 +19,7 @@ authors = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-requests = "^2.32.3"
+requests = "^2.32.4"
 PyJWT = "^2.9.0"
 cryptography = "^43.0.3"
 pyOpenSSL = "^24.2.1"
