@@ -114,7 +114,7 @@ def oidc_login(
 
     try:
         icat_session_id = OIDC_ICATAuthenticator.authenticate(mechanism, oidc_username)
-        icat_username = OIDC_ICATuthenticator.get_username(icat_session_id)
+        icat_username = OIDC_ICATAuthenticator.get_username(icat_session_id)
 
         access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
         refresh_token = jwt_handler.get_refresh_token(icat_username)
