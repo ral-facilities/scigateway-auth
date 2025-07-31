@@ -66,7 +66,7 @@ class OidcHandler:
             provider = self._providers[iss]
             key = provider.get_key(kid)
 
-            payload = jwt.decode(encoded_token, key=key, algorithms=[key.algorithm_name], audience=provider.get_audience(), options={"require": ["exp", "aud"], 'verify_exp': False, 'verify_aud': True})
+            payload = jwt.decode(encoded_token, key=key, algorithms=[key.algorithm_name], audience=provider.get_audience(), options={"require": ["exp", "aud"], 'verify_exp': True, 'verify_aud': True})
 
             return (provider.get_mechanism(), payload[provider.get_username_claim()])
 
