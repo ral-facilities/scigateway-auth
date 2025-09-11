@@ -37,10 +37,11 @@ class OidcProviderConfig(BaseModel):
     display_name: str
     configuration_url: HttpUrl
     client_id: str
-    audience: str
+    client_secret: str = None
     verify_cert: bool = True
     mechanism: str = None
-    username_claim: str
+    scope: str = "openid"
+    username_claim: str = "sub"
 
 
 class AuthenticationConfig(BaseModel):
@@ -58,6 +59,7 @@ class AuthenticationConfig(BaseModel):
     admin_users: list[str]
 
     oidc_providers: dict[str, OidcProviderConfig] = {}
+    oidc_redirect_url: HttpUrl = None
     oidc_icat_authenticator: str = None
     oidc_icat_authenticator_token: str = None
 

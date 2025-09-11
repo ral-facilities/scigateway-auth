@@ -15,12 +15,13 @@ from scigateway_auth.common.exceptions import (
     ICATAuthenticationError,
     InvalidJWTError,
     JWTRefreshError,
+    OidcProviderNotFoundError,
     UsernameMismatchError,
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
 from scigateway_auth.src.authentication import ICATAuthenticator, OIDC_ICATAuthenticator
 from scigateway_auth.src.jwt_handler import JWTHandler
-from scigateway_auth.src.oidc_handler import OidcHandler
+from scigateway_auth.src import oidc
 
 logger = logging.getLogger()
 
@@ -50,10 +51,20 @@ def get_authenticators():
     summary="Get a list of OIDC providers",
     response_description="Returns a list of OIDC providers",
 )
-def get_oidc_providers():
-    logger.info("Getting a list of OIDC prociders")
+def get_oidc_providers() ->JSONResponse:
+    logger.info("Getting a list of OIDC providers")
 
-    return [ {"display_name": p.display_name, "configuration_url": p.configuration_url, "client_id": p.client_id } for p in config.authentication.oidc_providers.values() ]
+    providers = {}
+    for provider_id, provider_config in config.authentication.oidc_providers.items():
+        providers[provider_id] = {
+            "display_name": provider_config.display_name,
+            "configuration_url": provider_config.configuration_url,
+            "client_id": provider_config.client_id,
+            "pkce": False if provider_config.client_secret else True,
+            "scope": provider_config.scope,
+        }
+
+    return JSONResponse(content=providers)
 
 
 @router.post(
@@ -93,21 +104,42 @@ def login(
 
 
 @router.post(
-    path="/oidc_login",
+    path="/oidc_token/{provider_id}",
+    summary="Get an OIDC id_token",
+    response_description="OIDC token endpoint response",
+)
+def oidc_token(
+    provider_id: Annotated[str, "OIDC provider id"],
+    code: Annotated[str, Body(description="OIDC authorization code")]
+) -> JSONResponse:
+    logger.info("Obtaining an id_token")
+
+    try:
+        token_response = oidc.get_token(provider_id, code)
+    except OidcProviderNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown OIDC provider: " + provider_id)
+
+    return JSONResponse(content=token_response)
+
+
+@router.post(
+    path="/oidc_login/{provider_id}",
     summary="Login with an OIDC id token",
     response_description="A JWT access token including a refresh token as an HTTP-only cookie",
 )
 def oidc_login(
     jwt_handler: JWTHandlerDep,
-    oidc_handler: Annotated[OidcHandler, Depends(OidcHandler)],
+    provider_id: Annotated[str, "The OIDC provider id"],
     bearer_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer(description="OIDC id token"))]
 ) -> JSONResponse:
     logger.info("Authenticating a user")
 
-    encoded_token = bearer_token.credentials
+    id_token = bearer_token.credentials
 
     try:
-        mechanism, oidc_username = oidc_handler.handle(encoded_token)
+        mechanism, oidc_username = oidc.get_username(provider_id, id_token)
+    except OidcProviderNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown OIDC provider: " + provider_id)
     except InvalidJWTError as exc:
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
