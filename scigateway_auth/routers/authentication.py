@@ -51,7 +51,7 @@ def get_authenticators():
     summary="Get a list of OIDC providers",
     response_description="Returns a list of OIDC providers",
 )
-def get_oidc_providers() ->JSONResponse:
+def get_oidc_providers() -> JSONResponse:
     logger.info("Getting a list of OIDC providers")
 
     providers = {}

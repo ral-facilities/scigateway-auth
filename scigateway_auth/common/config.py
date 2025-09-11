@@ -5,7 +5,7 @@ Module for the overall configuration for the application.
 from pathlib import Path
 from typing import List, Self
 
-from pydantic import BaseModel, ConfigDict, HttpUrl, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -35,7 +35,7 @@ class OidcProviderConfig(BaseModel):
     """
 
     display_name: str
-    configuration_url: HttpUrl
+    configuration_url: str
     client_id: str
     client_secret: str = None
     verify_cert: bool = True
@@ -59,7 +59,7 @@ class AuthenticationConfig(BaseModel):
     admin_users: list[str]
 
     oidc_providers: dict[str, OidcProviderConfig] = {}
-    oidc_redirect_uri: HttpUrl = None
+    oidc_redirect_uri: str = None
     oidc_icat_authenticator: str = None
     oidc_icat_authenticator_token: str = None
 
