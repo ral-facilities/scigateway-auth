@@ -59,7 +59,7 @@ class AuthenticationConfig(BaseModel):
     admin_users: list[str]
 
     oidc_providers: dict[str, OidcProviderConfig] = {}
-    oidc_redirect_url: HttpUrl = None
+    oidc_redirect_uri: HttpUrl = None
     oidc_icat_authenticator: str = None
     oidc_icat_authenticator_token: str = None
 

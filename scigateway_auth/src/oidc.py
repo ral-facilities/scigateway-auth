@@ -62,7 +62,7 @@ def get_token(provider_id: str, code: str) -> dict:
             "client_id": provider_config.client_id,
             "client_secret": provider_config.client_secret,
             "code": code,
-            "redirect_uri": config.authentication.oidc_redirect_url,
+            "redirect_uri": config.authentication.oidc_redirect_uri,
         },
         verify=provider_config.verify_cert
     )
