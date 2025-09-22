@@ -8,9 +8,6 @@ from scigateway_auth.common.exceptions import InvalidJWTError, OidcProviderNotFo
 # Amount of leeway (in seconds) when validating exp & iat
 LEEWAY = 5
 
-# Add an extra second of leeway because jwt.decode() truncates iat to the nearest second before validating
-LEEWAY = LEEWAY + 1
-
 
 @ttl_cache(ttl=24*60*60)
 def get_well_known_config(provider_id: str) -> dict:
