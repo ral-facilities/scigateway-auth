@@ -5,6 +5,12 @@ import requests
 from scigateway_auth.common.config import OidcProviderConfig, config
 from scigateway_auth.common.exceptions import InvalidJWTError, OidcProviderNotFoundError
 
+# Amount of leeway (in seconds) when validating exp & iat
+LEEWAY = 5
+
+# Add an extra second of leeway because jwt.decode() truncates iat to the nearest second before validating
+LEEWAY = LEEWAY + 1
+
 
 @ttl_cache(ttl=24*60*60)
 def get_well_known_config(provider_id: str) -> dict:
@@ -89,7 +95,9 @@ def get_username(provider_id: str, id_token: str) -> tuple[str, str]:
             audience=provider_config.client_id,
             issuer=get_well_known_config(provider_id)["issuer"],
             verify=True,
-            options={"require": ["exp", "aud", "iss"], 'verify_exp': True, 'verify_aud': True, 'verify_iss': True})
+            options={"require": ["exp", "aud", "iss"], 'verify_exp': True, 'verify_aud': True, 'verify_iss': True},
+            leeway=LEEWAY
+        )
 
         return (provider_config.mechanism, payload[provider_config.username_claim])
 
