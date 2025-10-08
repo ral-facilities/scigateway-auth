@@ -111,7 +111,7 @@ class ICATAuthenticator:
             raise ICATAuthenticationError("The session ID was unable to be refreshed")
 
 
-class OIDC_ICATAuthenticator(ICATAuthenticator):
+class OIDCICATAuthenticator(ICATAuthenticator):
 
     @staticmethod
     def authenticate(mechanism: str, username: str) -> str:
