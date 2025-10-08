@@ -132,8 +132,8 @@ class OIDC_ICATAuthenticator(ICATAuthenticator):
             "credentials": [
                 {"mechanism": mechanism},
                 {"username": username},
-                {"token": config.authentication.oidc_icat_authenticator_token}
-            ]
+                {"token": config.authentication.oidc_icat_authenticator_token},
+            ],
         }
         data = {"json": json.dumps(json_payload)}
 

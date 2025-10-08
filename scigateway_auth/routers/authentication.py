@@ -19,9 +19,9 @@ from scigateway_auth.common.exceptions import (
     UsernameMismatchError,
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
+from scigateway_auth.src import oidc
 from scigateway_auth.src.authentication import ICATAuthenticator, OIDC_ICATAuthenticator
 from scigateway_auth.src.jwt_handler import JWTHandler
-from scigateway_auth.src import oidc
 
 logger = logging.getLogger()
 
@@ -110,14 +110,17 @@ def login(
 )
 def oidc_token(
     provider_id: Annotated[str, "OIDC provider id"],
-    code: Annotated[str, Body(description="OIDC authorization code")]
+    code: Annotated[str, Body(description="OIDC authorization code")],
 ) -> JSONResponse:
     logger.info("Obtaining an id_token")
 
     try:
         token_response = oidc.get_token(provider_id, code)
     except OidcProviderNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown OIDC provider: " + provider_id)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unknown OIDC provider: " + provider_id,
+        ) from None
 
     return JSONResponse(content=token_response)
 
@@ -130,7 +133,7 @@ def oidc_token(
 def oidc_login(
     jwt_handler: JWTHandlerDep,
     provider_id: Annotated[str, "The OIDC provider id"],
-    bearer_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer(description="OIDC id token"))]
+    bearer_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer(description="OIDC id token"))],
 ) -> JSONResponse:
     logger.info("Authenticating a user")
 
@@ -139,7 +142,10 @@ def oidc_login(
     try:
         mechanism, oidc_username = oidc.get_username(provider_id, id_token)
     except OidcProviderNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown OIDC provider: " + provider_id)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unknown OIDC provider: " + provider_id,
+        ) from None
     except InvalidJWTError as exc:
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc

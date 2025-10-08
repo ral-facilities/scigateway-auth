@@ -56,6 +56,7 @@ class UserNotAdminError(Exception):
     Exception raised when a non-admin user performs an action that requires the user to be an admin.
     """
 
+
 class OidcProviderNotFoundError(Exception):
     """
     Exception raised when an OIDC provider is not found
