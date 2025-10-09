@@ -20,7 +20,7 @@ from scigateway_auth.common.exceptions import (
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
 from scigateway_auth.src import oidc
-from scigateway_auth.src.authentication import ICATAuthenticator, OIDC_ICATAuthenticator
+from scigateway_auth.src.authentication import ICATAuthenticator, OIDCICATAuthenticator
 from scigateway_auth.src.jwt_handler import JWTHandler
 
 logger = logging.getLogger()
@@ -151,8 +151,8 @@ def oidc_login(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
 
     try:
-        icat_session_id = OIDC_ICATAuthenticator.authenticate(mechanism, oidc_username)
-        icat_username = OIDC_ICATAuthenticator.get_username(icat_session_id)
+        icat_session_id = OIDCICATAuthenticator.authenticate(mechanism, oidc_username)
+        icat_username = OIDCICATAuthenticator.get_username(icat_session_id)
 
         access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
         refresh_token = jwt_handler.get_refresh_token(icat_username)
