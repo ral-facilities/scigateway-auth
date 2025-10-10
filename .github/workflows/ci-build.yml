@@ -94,7 +94,7 @@ jobs:
   docker:
     needs: [tests, linting, formatting, safety]
     name: Docker
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       PUSH_DOCKER_IMAGE_TO_HARBOR: ${{ inputs.push-docker-image-to-harbor != null && inputs.push-docker-image-to-harbor || 'false' }}
     steps:
