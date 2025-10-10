@@ -7,7 +7,7 @@ COPY poetry.lock pyproject.toml ./
 RUN --mount=type=cache,target=/root/.cache \
     set -eux; \
     \
-    pip install --no-cache-dir 'poetry~=1.8.4'; \
+    pip install --no-cache-dir 'poetry~=2.0'; \
     \
     poetry export --only dev --format requirements.txt --without-hashes --output requirements-dev.txt; \
     poetry export --without dev --format requirements.txt --without-hashes --output requirements-prod.txt;
