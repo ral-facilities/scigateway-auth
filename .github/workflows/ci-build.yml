@@ -47,7 +47,7 @@ jobs:
       run: pip install nox==2024.10.9
 
     - name: Install Poetry
-      run: pip install poetry==1.8.4
+      run: pip install poetry~=2.0
 
     - name: Run Nox lint session
       run: nox -s lint
@@ -68,7 +68,7 @@ jobs:
       run: pip install nox==2024.10.9
 
     - name: Install Poetry
-      run: pip install poetry==1.8.4
+      run: pip install poetry~=2.0
 
     - name: Run Nox black session
       run: nox -s black
@@ -94,7 +94,7 @@ jobs:
   docker:
     needs: [tests, linting, formatting, safety]
     name: Docker
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       PUSH_DOCKER_IMAGE_TO_HARBOR: ${{ inputs.push-docker-image-to-harbor != null && inputs.push-docker-image-to-harbor || 'false' }}
     steps:
