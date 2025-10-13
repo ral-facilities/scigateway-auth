@@ -21,7 +21,7 @@ def get_well_known_config(provider_id: str) -> dict:
         raise OidcProviderNotFoundError from None
 
     r = requests.get(provider_config.configuration_url, verify=provider_config.verify_cert, timeout=TIMEOUT)
-    r.raise_for_status
+    r.raise_for_status()
     return r.json()
 
 
@@ -37,7 +37,7 @@ def get_jwks(provider_id: str) -> dict:
     jwks_uri = well_known_config["jwks_uri"]
 
     r = requests.get(jwks_uri, verify=provider_config.verify_cert, timeout=TIMEOUT)
-    r.raise_for_status
+    r.raise_for_status()
     jwks_config = r.json()
 
     keys = {}
