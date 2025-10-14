@@ -12,14 +12,17 @@ LEEWAY = 5
 TIMEOUT = 10
 
 
-@ttl_cache(ttl=(24 * 60 * 60))
-def get_well_known_config(provider_id: str) -> dict:
-
+def get_provider_config(provider_id: str) -> OidcProviderConfig:
     try:
-        provider_config: OidcProviderConfig = config.authentication.oidc_providers[provider_id]
+        return config.authentication.oidc_providers[provider_id]
     except KeyError:
         raise OidcProviderNotFoundError from None
 
+
+@ttl_cache(ttl=(24 * 60 * 60))
+def get_well_known_config(provider_id: str) -> dict:
+
+    provider_config = get_provider_config(provider_id)
     r = requests.get(provider_config.configuration_url, verify=provider_config.verify_cert, timeout=TIMEOUT)
     r.raise_for_status()
     return r.json()
@@ -28,11 +31,7 @@ def get_well_known_config(provider_id: str) -> dict:
 @ttl_cache(ttl=(2 * 60 * 60))
 def get_jwks(provider_id: str) -> dict:
 
-    try:
-        provider_config: OidcProviderConfig = config.authentication.oidc_providers[provider_id]
-    except KeyError:
-        raise OidcProviderNotFoundError from None
-
+    provider_config = get_provider_config(provider_id)
     well_known_config = get_well_known_config(provider_id)
     jwks_uri = well_known_config["jwks_uri"]
 
@@ -54,11 +53,7 @@ def get_jwks(provider_id: str) -> dict:
 
 def get_token(provider_id: str, code: str) -> dict:
 
-    try:
-        provider_config: OidcProviderConfig = config.authentication.oidc_providers[provider_id]
-    except KeyError:
-        raise OidcProviderNotFoundError from None
-
+    provider_config = get_provider_config(provider_id)
     token_endpoint = get_well_known_config(provider_id)["token_endpoint"]
 
     r = requests.post(
@@ -79,10 +74,8 @@ def get_token(provider_id: str, code: str) -> dict:
 
 
 def get_username(provider_id: str, id_token: str) -> tuple[str, str]:
-    try:
-        provider_config: OidcProviderConfig = config.authentication.oidc_providers[provider_id]
-    except KeyError:
-        raise OidcProviderNotFoundError from None
+
+    provider_config = get_provider_config(provider_id)
 
     try:
         unverified_header = jwt.get_unverified_header(id_token)
