@@ -77,6 +77,10 @@ def get_username(provider_id: str, id_token: str) -> tuple[str, str]:
         except KeyError as exc:
             raise InvalidJWTError("Invalid OIDC id_token") from exc
 
+        # Ensure that this key can be used for signing
+        if key.public_key_use not in [None, "sig"]:
+            raise InvalidJWTError("Invalid OIDC id_token")
+
         payload = jwt.decode(
             jwt=id_token,
             key=key,
