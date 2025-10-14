@@ -29,7 +29,7 @@ def get_well_known_config(provider_id: str) -> dict:
 
 
 @ttl_cache(ttl=(2 * 60 * 60))
-def get_jwks(provider_id: str) -> dict:
+def get_jwks(provider_id: str) -> jwt.PyJWKSet:
 
     provider_config = get_provider_config(provider_id)
     well_known_config = get_well_known_config(provider_id)
@@ -39,16 +39,7 @@ def get_jwks(provider_id: str) -> dict:
     r.raise_for_status()
     jwks_config = r.json()
 
-    keys = {}
-    for key in jwks_config["keys"]:
-        kid = key["kid"]
-        try:
-            keys[kid] = jwt.PyJWK(key)
-        except jwt.exceptions.PyJWKError:
-            # Possibly unsupported algorithm (e.g. RSA-OAEP)
-            pass
-
-    return keys
+    return jwt.PyJWKSet(jwks_config["keys"])
 
 
 def get_token(provider_id: str, code: str) -> dict:
