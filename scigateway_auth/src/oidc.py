@@ -86,8 +86,12 @@ def get_username(provider_id: str, id_token: str) -> tuple[str, str]:
 
     try:
         unverified_header = jwt.get_unverified_header(id_token)
-        kid = unverified_header["kid"]
-        key = get_jwks(provider_id)[kid]
+
+        try:
+            kid = unverified_header["kid"]
+            key = get_jwks(provider_id)[kid]
+        except KeyError as exc:
+            raise InvalidJWTError("Invalid OIDC id_token") from exc
 
         payload = jwt.decode(
             jwt=id_token,
@@ -100,7 +104,12 @@ def get_username(provider_id: str, id_token: str) -> tuple[str, str]:
             leeway=LEEWAY,
         )
 
-        return (provider_config.mechanism, payload[provider_config.username_claim])
+        try:
+            username = payload[provider_config.username_claim]
+        except KeyError:
+            raise InvalidJWTError("Invalid OIDC id_token") from None
+
+        return (provider_config.mechanism, username)
 
     except jwt.exceptions.InvalidTokenError as exc:
         raise InvalidJWTError("Invalid OIDC id_token") from exc
