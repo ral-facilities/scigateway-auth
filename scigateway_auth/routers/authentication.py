@@ -80,35 +80,36 @@ def login(
     ],
 ) -> JSONResponse:
     logger.info("Authenticating a user")
-    try:
-        if login_details.credentials is not None:
-            credentials = {
-                "username": login_details.credentials.username.get_secret_value(),
-                "password": login_details.credentials.password.get_secret_value(),
-            }
-        else:
-            credentials = None
 
+    if login_details.credentials is None:
+        credentials = None
+    else:
+        credentials = {
+            "username": login_details.credentials.username.get_secret_value(),
+            "password": login_details.credentials.password.get_secret_value(),
+        }
+
+    try:
         icat_session_id = ICATAuthenticator.authenticate(login_details.mnemonic, credentials)
         icat_username = ICATAuthenticator.get_username(icat_session_id)
-
-        access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
-        refresh_token = jwt_handler.get_refresh_token(icat_username)
-
-        response = JSONResponse(content=access_token)
-        response.set_cookie(
-            key="scigateway:refresh_token",
-            value=refresh_token,
-            max_age=config.authentication.refresh_token_validity_days * 24 * 60 * 60,
-            secure=True,
-            httponly=True,
-            samesite="lax",
-            path=f"{config.api.root_path}/refresh",
-        )
-        return response
     except ICATAuthenticationError as exc:
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+
+    access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+    refresh_token = jwt_handler.get_refresh_token(icat_username)
+
+    response = JSONResponse(content=access_token)
+    response.set_cookie(
+        key="scigateway:refresh_token",
+        value=refresh_token,
+        max_age=config.authentication.refresh_token_validity_days * 24 * 60 * 60,
+        secure=True,
+        httponly=True,
+        samesite="lax",
+        path=f"{config.api.root_path}/refresh",
+    )
+    return response
 
 
 @router.post(
@@ -167,24 +168,24 @@ def oidc_login(
     try:
         icat_session_id = ICATAuthenticator.authenticate(config.authentication.oidc_icat_authenticator, credentials)
         icat_username = ICATAuthenticator.get_username(icat_session_id)
-
-        access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
-        refresh_token = jwt_handler.get_refresh_token(icat_username)
-
-        response = JSONResponse(content=access_token)
-        response.set_cookie(
-            key="scigateway:refresh_token",
-            value=refresh_token,
-            max_age=config.authentication.refresh_token_validity_days * 24 * 60 * 60,
-            secure=True,
-            httponly=True,
-            samesite="lax",
-            path=f"{config.api.root_path}/refresh",
-        )
-        return response
     except ICATAuthenticationError as exc:
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+
+    access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+    refresh_token = jwt_handler.get_refresh_token(icat_username)
+
+    response = JSONResponse(content=access_token)
+    response.set_cookie(
+        key="scigateway:refresh_token",
+        value=refresh_token,
+        max_age=config.authentication.refresh_token_validity_days * 24 * 60 * 60,
+        secure=True,
+        httponly=True,
+        samesite="lax",
+        path=f"{config.api.root_path}/refresh",
+    )
+    return response
 
 
 @router.post(
