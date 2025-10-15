@@ -20,7 +20,7 @@ from scigateway_auth.common.exceptions import (
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
 from scigateway_auth.src import oidc
-from scigateway_auth.src.authentication import ICATAuthenticator, OIDCICATAuthenticator
+from scigateway_auth.src.authentication import ICATAuthenticator
 from scigateway_auth.src.jwt_handler import JWTHandler
 
 logger = logging.getLogger()
@@ -81,7 +81,15 @@ def login(
 ) -> JSONResponse:
     logger.info("Authenticating a user")
     try:
-        icat_session_id = ICATAuthenticator.authenticate(login_details.mnemonic, login_details.credentials)
+        if login_details.credentials is not None:
+            credentials = {
+                "username": login_details.credentials.username.get_secret_value(),
+                "password": login_details.credentials.password.get_secret_value(),
+            }
+        else:
+            credentials = None
+
+        icat_session_id = ICATAuthenticator.authenticate(login_details.mnemonic, credentials)
         icat_username = ICATAuthenticator.get_username(icat_session_id)
 
         access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
@@ -150,9 +158,15 @@ def oidc_login(
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
 
+    credentials = {
+        "mechanism": mechanism,
+        "username": oidc_username,
+        "token": config.authentication.oidc_icat_authenticator_token,
+    }
+
     try:
-        icat_session_id = OIDCICATAuthenticator.authenticate(mechanism, oidc_username)
-        icat_username = OIDCICATAuthenticator.get_username(icat_session_id)
+        icat_session_id = ICATAuthenticator.authenticate(config.authentication.oidc_icat_authenticator, credentials)
+        icat_username = ICATAuthenticator.get_username(icat_session_id)
 
         access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
         refresh_token = jwt_handler.get_refresh_token(icat_username)
