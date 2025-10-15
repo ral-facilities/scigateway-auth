@@ -172,3 +172,12 @@ class TestOidc:
         mock_post.side_effect = mock_requests_post
 
         oidc.get_token("mock-client-secret", "test-code")
+
+    @patch("requests.post")
+    @patch("requests.get")
+    def test_get_token_no_client_secret(self, mock_get: Mock, mock_post: Mock):
+        mock_get.side_effect = mock_requests_get
+        mock_post.side_effect = mock_requests_post
+
+        with pytest.raises(OidcProviderNotFoundError):
+            oidc.get_token("mock-pkce", "test-code")

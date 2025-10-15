@@ -47,6 +47,9 @@ def get_token(provider_id: str, code: str) -> dict:
     provider_config = get_provider_config(provider_id)
     token_endpoint = get_well_known_config(provider_id)["token_endpoint"]
 
+    if provider_config.client_secret is None:
+        raise OidcProviderNotFoundError from None
+
     r = requests.post(
         url=token_endpoint,
         data={
