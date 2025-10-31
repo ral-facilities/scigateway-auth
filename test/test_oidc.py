@@ -1,5 +1,5 @@
 """
-Unit tests for the `ICATAuthenticator` class.
+Unit tests for the `oidc` module.
 """
 
 import time
@@ -83,6 +83,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() return the expected mechanism and username.
+        """
         mock_get.side_effect = mock_requests_get
 
         mechanism, username = oidc.get_username("mock-pkce", create_token())
@@ -91,6 +94,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_expired(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises InvalidJWTError if exp is missing or expired.
+        """
         mock_get.side_effect = mock_requests_get
 
         payload = create_payload()
@@ -106,6 +112,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_invalid_audience(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises InvalidJWTError if aud is missing or isn't the expected value.
+        """
         mock_get.side_effect = mock_requests_get
 
         payload = create_payload()
@@ -121,6 +130,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_invalid_issuer(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises InvalidJWTError if iss is missing or isn't the expected value.
+        """
         mock_get.side_effect = mock_requests_get
 
         payload = create_payload()
@@ -136,6 +148,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_missing_sub(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises InvalidJWTError if sub is missing.
+        """
         mock_get.side_effect = mock_requests_get
 
         payload = create_payload()
@@ -146,6 +161,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_missing_kid(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises InvalidJWTError if kid is missing.
+        """
         mock_get.side_effect = mock_requests_get
 
         with pytest.raises(InvalidJWTError):
@@ -153,6 +171,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_unkonwn_key(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises InvalidJWTError if kid doesn't match a key from the JWKS.
+        """
         mock_get.side_effect = mock_requests_get
 
         with pytest.raises(InvalidJWTError):
@@ -160,6 +181,9 @@ class TestOidc:
 
     @patch("requests.get")
     def test_get_username_unkown_provider(self, mock_get: Mock):
+        """
+        Test that oidc.get_username() raises OidcProviderNotFoundError if the provider_id is not found.
+        """
         mock_get.side_effect = mock_requests_get
 
         with pytest.raises(OidcProviderNotFoundError):
@@ -168,6 +192,9 @@ class TestOidc:
     @patch("requests.post")
     @patch("requests.get")
     def test_get_token(self, mock_get: Mock, mock_post: Mock):
+        """
+        Test that oidc.get_token() works.
+        """
         mock_get.side_effect = mock_requests_get
         mock_post.side_effect = mock_requests_post
 
@@ -176,6 +203,9 @@ class TestOidc:
     @patch("requests.post")
     @patch("requests.get")
     def test_get_token_no_client_secret(self, mock_get: Mock, mock_post: Mock):
+        """
+        Test that oidc.get_token() raises OidcProviderNotFoundError if the OIDC provider has no client_secret.
+        """
         mock_get.side_effect = mock_requests_get
         mock_post.side_effect = mock_requests_post
 

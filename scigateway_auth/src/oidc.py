@@ -1,3 +1,7 @@
+"""
+OIDC module.
+"""
+
 from cachetools.func import ttl_cache
 import jwt
 import requests
@@ -13,6 +17,13 @@ TIMEOUT = 10
 
 
 def get_provider_config(provider_id: str) -> OidcProviderConfig:
+    """
+    Get OIDC provider config with error handling.
+
+    :param provider_id: The ID of the OIDC provider.
+    :raises OidcProviderNotFoundError: If there is no OIDC provider config for the given provider_id.
+    :return: The OIDC provider config.
+    """
     try:
         return config.authentication.oidc_providers[provider_id]
     except KeyError:
@@ -21,7 +32,15 @@ def get_provider_config(provider_id: str) -> OidcProviderConfig:
 
 @ttl_cache(ttl=(24 * 60 * 60))
 def get_well_known_config(provider_id: str) -> dict:
+    """
+    Retreives the OIDC provider's configuration from its .well-known/openid-configuration endpoint.
+    Caches the response for 24 hours.
 
+    :param provider_id: The ID of the OIDC provider.
+    :raises OidcProviderNotFoundError: If there is no OIDC provider config for the given provider_id.
+    :raises RequestException: If a HTTP request did not succeed or returned an error.
+    :return: The OIDC provider's configuration.
+    """
     provider_config = get_provider_config(provider_id)
     r = requests.get(provider_config.configuration_url, verify=provider_config.verify_cert, timeout=TIMEOUT)
     r.raise_for_status()
@@ -30,7 +49,15 @@ def get_well_known_config(provider_id: str) -> dict:
 
 @ttl_cache(ttl=(2 * 60 * 60))
 def get_jwks(provider_id: str) -> jwt.PyJWKSet:
+    """
+    Retreives an OIDC provider's JWK Set.
+    Caches the response for 2 hours.
 
+    :param provider_id: The ID of the OIDC provider.
+    :raises OidcProviderNotFoundError: If there is no OIDC provider config for the given provider_id.
+    :raises RequestException: If a HTTP request did not succeed or returned an error.
+    :return: The OIDC provider's JWK Set.
+    """
     provider_config = get_provider_config(provider_id)
     well_known_config = get_well_known_config(provider_id)
     jwks_uri = well_known_config["jwks_uri"]
@@ -43,7 +70,16 @@ def get_jwks(provider_id: str) -> jwt.PyJWKSet:
 
 
 def get_token(provider_id: str, code: str) -> dict:
+    """
+    Call the OIDC provider's token endpoint.
 
+    :param provider_id: The ID of the OIDC provider.
+    :param code: Authorization code obtained from the OIDC provider's authorization endpoint.
+    :raises OidcProviderNotFoundError: If there is no OIDC provider config for the given provider_id or the OIDC
+        provider config does not have a client_secret.
+    :raises RequestException: If a HTTP request did not succeed or returned an error.
+    :return: The reponse received from the token endpoint.
+    """
     provider_config = get_provider_config(provider_id)
     token_endpoint = get_well_known_config(provider_id)["token_endpoint"]
 
@@ -68,7 +104,16 @@ def get_token(provider_id: str, code: str) -> dict:
 
 
 def get_username(provider_id: str, id_token: str) -> tuple[str, str]:
+    """
+    Verify an id_token and return the mechanism and username.
 
+    :param provider_id: The ID of the OIDC provider.
+    :param id_token: An OIDC id_token.
+    :raises InvalidJWTError: If the id_token is invalid.
+    :raises OidcProviderNotFoundError: If there is no OIDC provider config for the given provider_id.
+    :raises RequestException: If a HTTP request did not succeed or returned an error.
+    :return: The mechanism for the provider, and the username obtained from the id_token.
+    """
     provider_config = get_provider_config(provider_id)
 
     try:
