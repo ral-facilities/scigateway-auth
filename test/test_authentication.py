@@ -8,7 +8,6 @@ import pytest
 
 from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import ICATAuthenticationError
-from scigateway_auth.common.schemas import UserCredentialsPostRequestSchema
 from scigateway_auth.src.authentication import ICATAuthenticator
 
 
@@ -21,7 +20,7 @@ class TestICATAuthenticator:
     password = "test-password"  # noqa: S105
     mnemonic = "test-mnemonic"
     session_id = "test-session-id"
-    credentials = UserCredentialsPostRequestSchema(username=username, password=password)
+    credentials = {"username": username, "password": password}
 
     def create_mock_response(self, status_code: int, json_data: dict = None) -> Mock:
         """
