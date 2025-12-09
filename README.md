@@ -178,6 +178,68 @@ Listed below are the environment variables supported by the application.
 | `ICAT_SERVER__CERTIFICATE_VALIDATION`           | Whether to verify ICAT certificates using its internal trust store or disable certificate validation completely.          | Yes       |               |
 | `ICAT_SERVER__REQUEST_TIMEOUT_SECONDS`          | The maximum number of seconds that the request should wait for a response from ICAT before timing out.                    | Yes       |               |
 
+### OIDC Configuration
+
+The following environment variables are only required when using OIDC authentication:
+
+| Environment Variable                            | Description                                                                                                               | Mandatory | Default Value |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|-----------|---------------|
+| `AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR`       | The mnemonic of the ICAT authenticator. Usually `delegating`.                                                             | Yes       |               |
+| `AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN` | The secret token to pass to the ICAT authenticator.                                                                       | Yes       |               |
+| `AUTHENTICATION__OIDC_REDIRECT_URI`             | Redirect URI. Required if a `client_secret` is used.                                                                      | No        |               |
+| `AUTHENTICATION__OIDC_PROVIDERS`                | A dictionary of OIDC provider configurations, indexed by `provider_id`.                                                   | Yes       |               |
+
+To support multiple OIDC providers simultaneously, provider-specific config is indexed by a `provider_id`, e.g. to set the value of `DISPLAY_NAME` you would set the environment variable `AUTHENTICATION__OIDC_PROVIDERS__<provider_id>__DISPLAY_NAME`. The actual value used for `provider_id` is not important.
+
+Each individual OIDC provider has the following configuration:
+
+| Environment Variable                            | Description                                                                                                               | Mandatory | Default Value |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|-----------|---------------|
+| `DISPLAY_NAME`                                  | The name of the OIDC provider to display in the frontend.                                                                 | Yes       |               |
+| `CONFIGURATION_URL`                             | The URL of the OIDC provider's configuration metadata. This will usually end with`/.well-known/openid-configuration`.     | Yes       |               |
+| `CLIENT_ID`                                     | The `client_id` of the application registered with the OIDC provider.                                                     | Yes       |               |
+| `CLIENT_SECRET`                                 | The `client_secret`. If this is omitted then Authorization Code Flow with PKCE will be used (which is preferred).         | No        |               |
+| `VERIFY_CERT`                                   | Whether to verify TLS certificates in calls to the OIDC provider. This should be `True`.                                  | No        | `True`        |
+| `MECHANISM`                                     | The mechanism to prepend to the username in ICAT when using this OIDC provider.                                           | No        |               |
+| `SCOPE`                                         | Which OAuth scopes to request. Must include `openid`.                                                                     | No        | `openid`      |
+| `USERNAME_CLAIM`                                | Which OAuth claim to use as the user's username.                                                                          | No        | `sub`         |
+
+### Example OIDC Configurations
+
+This example uses Microsoft Single Sign-On. The format of the username will be determined by the tenant admin.
+```
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR="delegating"
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN="fe1be44a35eb00ab46f5"
+AUTHENTICATION__OIDC_PROVIDERS__sso__DISPLAY_NAME="Microsoft SSO"
+AUTHENTICATION__OIDC_PROVIDERS__sso__CONFIGURATION_URL="https://login.microsoftonline.com/73c7442c-5f40-4db0-8dd2-5b9bb94516a1/v2.0/.well-known/openid-configuration"
+AUTHENTICATION__OIDC_PROVIDERS__sso__CLIENT_ID="700bfc86-e26e-4638-a1a6-f7027106857b"
+```
+
+This example uses ORCID. The username will be the user's ORCID Id prepended with `orcid/`, e.g. `orcid/0000-0002-1825-0097`.
+Since `client_secret` is used, `AUTHENTICATION__OIDC_REDIRECT_URI` must also be set.
+```
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR="delegating"
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN="fe1be44a35eb00ab46f5"
+AUTHENTICATION__OIDC_REDIRECT_URI="https://scigateway.example.com/login"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__DISPLAY_NAME="Orcid"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__CONFIGURATION_URL="https://orcid.org/.well-known/openid-configuration"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__CLIENT_ID="APP-QKUS1G0MLIOXDC57"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__CLIENT_SECRET="33182ac684744367edd8"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__MECHANISM="orcid"
+```
+
+This example uses Keycloak for testing with TLS certificate verification disabled. The username will be the user's email address (using custom settings for `SCOPE` and `USERNAME_CLAIM`).
+```
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR="delegating"
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN="fe1be44a35eb00ab46f5"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__DISPLAY_NAME="Keycloak"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__CONFIGURATION_URL="https://localhost:9000/realms/test-realm/.well-known/openid-configuration"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__CLIENT_ID="test-client-id"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__VERIFY_CERT="False"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__SCOPE="openid email"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__USERNAME_CLAIM="email"
+```
+
 ### How to add or remove a JWT refresh token from the blacklist
 
 The `AUTHENTICATION__JWT_REFRESH_TOKEN_BLACKLIST` environment variable holds the list of blacklisted JWT refresh tokens

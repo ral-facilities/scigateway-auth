@@ -3,9 +3,9 @@ Module for the overall configuration for the application.
 """
 
 from pathlib import Path
-from typing import List
+from typing import List, Self
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +29,21 @@ class MaintenanceConfig(BaseModel):
     scheduled_maintenance_path: str
 
 
+class OidcProviderConfig(BaseModel):
+    """
+    Configuration model for an OIDC provider
+    """
+
+    display_name: str
+    configuration_url: str
+    client_id: str
+    client_secret: str = None
+    verify_cert: bool = True
+    mechanism: str = None
+    scope: str = "openid"
+    username_claim: str = "sub"
+
+
 class AuthenticationConfig(BaseModel):
     """
     Configuration model for the authentication.
@@ -42,6 +57,20 @@ class AuthenticationConfig(BaseModel):
     jwt_refresh_token_blacklist: list[str]
     # These are the ICAT usernames of the users normally in the <icat-mnemonic>/<username> form
     admin_users: list[str]
+
+    oidc_providers: dict[str, OidcProviderConfig] = {}
+    oidc_redirect_uri: str = None
+    oidc_icat_authenticator: str = None
+    oidc_icat_authenticator_token: str = None
+
+    @model_validator(mode="after")
+    def validate_oidc(self) -> Self:
+        if self.oidc_providers:
+            if not self.oidc_icat_authenticator:
+                raise ValueError("oidc_icat_authenticator is required if oidc_providers is set")
+            if not self.oidc_icat_authenticator_token:
+                raise ValueError("oidc_icat_authenticator_token is required if oidc_providers is set")
+        return self
 
 
 class ICATServerConfig(BaseModel):
