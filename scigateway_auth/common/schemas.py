@@ -36,30 +36,9 @@ class MaintenanceStateSchema(BaseModel):
     message: str = Field(description="The maintenance message to be shown")
 
 
-class MaintenancePutRequestSchema(BaseModel):
-    """
-    Schema model for a maintenance `PUT` request.
-    """
-
-    token: str = Field(description="The user's access token")
-    maintenance: MaintenanceStateSchema = Field(description="The maintenance state")
-
-
 class ScheduledMaintenanceStateSchema(MaintenanceStateSchema):
     """
     Schema model for the scheduled maintenance state.
     """
 
     severity: str = Field(description="The severity of the maintenance")
-
-
-class ScheduledMaintenancePutRequestSchema(BaseModel):
-    """
-    Schema model for a scheduled maintenance `PUT` request.
-    """
-
-    token: str = Field(description="The user's access token")
-    scheduled_maintenance: ScheduledMaintenanceStateSchema = Field(
-        alias="scheduledMaintenance",
-        description="The scheduled maintenance state",
-    )
