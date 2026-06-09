@@ -6,7 +6,7 @@
 This is a Python microservice created using FastAPI that provides an Authentication REST API for the SciGateway web
 application.
 
-## How to Run Locally
+## How to Run
 
 This microservice requires an ICAT server to run against.
 
@@ -47,14 +47,13 @@ Ensure that Docker is installed and running on your machine before proceeding.
 #### Using `docker-compose.yml` for local development
 
 The easiest way to run the application with Docker for local development is using the `docker-compose.yml` file. It is
-configured to mount the `scigateway_auth` directory to the container via a volume which means that FastAPI will watch
-for changes made to the code and automatically reload the application on the fly. This is useful as you do not have to
-rebuild the image and start the container again each time you make a change.
+configured to start the application in a reload mode which using the mounted `scigateway_auth` directory means that
+FastAPI will watch for changes moade to the code and automatically reload the application on the fly.
 
 1. Build and start the Docker container:
 
    ```bash
-   docker-compose up
+   docker compose up
    ```
    The microservice should now be running inside Docker at http://localhost:8000 and its Swagger UI could be accessed
    at http://localhost:8000/docs.
@@ -63,8 +62,7 @@ rebuild the image and start the container again each time you make a change.
 
 Use the `Dockerfile`'s `dev` stage to run just the application itself in a container. Use this only for local
 development (not production)! Mounting the `scigateway_auth` directory to the container via a volume means that FastAPI
-will watch for changes made to the code and automatically reload the application on the fly. This is useful as you do
-not have to rebuild the image and start the container again each time you make a change.
+will watch for changes made to the code and automatically reload the application on the fly.
 
 1. Build an image using the `Dockerfile`'s `dev` stage from the root of the project directory:
 
@@ -75,13 +73,30 @@ not have to rebuild the image and start the container again each time you make a
 2. Start the container using the image built and map it to port `8000` locally:
 
    ```bash
-   docker run --publish 8000:8000 --name scigateway-auth --volume ./scigateway_auth:/app/scigateway_auth --volume ./keys/jwt-key:/app/keys/jwt-key --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json scigateway-auth:dev
+   docker run \
+    --publish 8000:8000 \
+    --name scigateway-auth \
+    --volume ./scigateway_auth:/app/scigateway_auth \
+    --volume ./keys/jwt-key:/app/keys/jwt-key \
+    --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub \
+    --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json \
+    --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json \
+    scigateway-auth:dev
    ```
 
    or with values for the environment variables:
 
    ```bash
-   docker run --publish 8000:8000 --name scigateway-auth --env AUTHENTICATION__REFRESH_TOKEN_VALIDITY_DAYS=14 --volume ./scigateway_auth:/app/scigateway_auth --volume ./keys/jwt-key:/app/keys/jwt-key --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json scigateway-auth:dev
+   docker run \
+    --publish 8000:8000 \
+    --name scigateway-auth \
+    --env AUTHENTICATION__REFRESH_TOKEN_VALIDITY_DAYS=14 \
+    --volume ./scigateway_auth:/app/scigateway_auth \
+    --volume ./keys/jwt-key:/app/keys/jwt-key \
+    --volume ./keys/jwt-key.pub:/app/keys/jwt-key.pub \
+    --volume ./maintenance/maintenance.json:/app/maintenance/maintenance.json \
+    --volume ./maintenance/scheduled_maintenance.json:/app/maintenance/scheduled_maintenance.json \
+    scigateway-auth:dev
    ```
 
    The microservice should now be running inside Docker at http://localhost:8000 and its Swagger UI could be accessed
@@ -91,8 +106,7 @@ not have to rebuild the image and start the container again each time you make a
 
 Use the `Dockerfile`'s `test` stage to run the tests in a container. Mounting the `scigateway_auth` and `test`
 directories to the container via volumes means that any changes made to the application or test code will automatically
-be synced to the container next time you run the tests. This is useful as you do not have to rebuild the image each
-time you make a change.
+be synced to the container next time you run the tests.
 
 1. Build an image using the `Dockerfile`'s `test` stage from the root of the project directory:
 
@@ -103,7 +117,12 @@ time you make a change.
 2. Run the tests using:
 
    ```bash
-   docker run --rm --name scigateway-auth --volume ./scigateway_auth:/app/scigateway_auth --volume ./test:/app/test scigateway-auth:test
+   docker run \
+    --rm \
+    --name scigateway-auth \
+    --volume ./scigateway_auth:/app/scigateway_auth \
+    --volume ./test:/app/test \
+    scigateway-auth:test
    ```
 
 ### Outside of Docker
@@ -117,7 +136,7 @@ documentation.
    ```bash
    poetry install
    ```
-   
+
 2. Start the application:
 
    ```bash
@@ -158,6 +177,68 @@ Listed below are the environment variables supported by the application.
 | `ICAT_SERVER__URL`                              | The URL to the ICAT server to connect to.                                                                                 | Yes       |               |
 | `ICAT_SERVER__CERTIFICATE_VALIDATION`           | Whether to verify ICAT certificates using its internal trust store or disable certificate validation completely.          | Yes       |               |
 | `ICAT_SERVER__REQUEST_TIMEOUT_SECONDS`          | The maximum number of seconds that the request should wait for a response from ICAT before timing out.                    | Yes       |               |
+
+### OIDC Configuration
+
+The following environment variables are only required when using OIDC authentication:
+
+| Environment Variable                            | Description                                                                                                               | Mandatory | Default Value |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|-----------|---------------|
+| `AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR`       | The mnemonic of the ICAT authenticator. Usually `delegating`.                                                             | Yes       |               |
+| `AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN` | The secret token to pass to the ICAT authenticator.                                                                       | Yes       |               |
+| `AUTHENTICATION__OIDC_REDIRECT_URI`             | Redirect URI. Required if a `client_secret` is used.                                                                      | No        |               |
+| `AUTHENTICATION__OIDC_PROVIDERS`                | A dictionary of OIDC provider configurations, indexed by `provider_id`.                                                   | Yes       |               |
+
+To support multiple OIDC providers simultaneously, provider-specific config is indexed by a `provider_id`, e.g. to set the value of `DISPLAY_NAME` you would set the environment variable `AUTHENTICATION__OIDC_PROVIDERS__<provider_id>__DISPLAY_NAME`. The actual value used for `provider_id` is not important.
+
+Each individual OIDC provider has the following configuration:
+
+| Environment Variable                            | Description                                                                                                               | Mandatory | Default Value |
+|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|-----------|---------------|
+| `DISPLAY_NAME`                                  | The name of the OIDC provider to display in the frontend.                                                                 | Yes       |               |
+| `CONFIGURATION_URL`                             | The URL of the OIDC provider's configuration metadata. This will usually end with`/.well-known/openid-configuration`.     | Yes       |               |
+| `CLIENT_ID`                                     | The `client_id` of the application registered with the OIDC provider.                                                     | Yes       |               |
+| `CLIENT_SECRET`                                 | The `client_secret`. If this is omitted then Authorization Code Flow with PKCE will be used (which is preferred).         | No        |               |
+| `VERIFY_CERT`                                   | Whether to verify TLS certificates in calls to the OIDC provider. This should be `True`.                                  | No        | `True`        |
+| `MECHANISM`                                     | The mechanism to prepend to the username in ICAT when using this OIDC provider.                                           | No        |               |
+| `SCOPE`                                         | Which OAuth scopes to request. Must include `openid`.                                                                     | No        | `openid`      |
+| `USERNAME_CLAIM`                                | Which OAuth claim to use as the user's username.                                                                          | No        | `sub`         |
+
+### Example OIDC Configurations
+
+This example uses Microsoft Single Sign-On. The format of the username will be determined by the tenant admin.
+```
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR="delegating"
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN="fe1be44a35eb00ab46f5"
+AUTHENTICATION__OIDC_PROVIDERS__sso__DISPLAY_NAME="Microsoft SSO"
+AUTHENTICATION__OIDC_PROVIDERS__sso__CONFIGURATION_URL="https://login.microsoftonline.com/73c7442c-5f40-4db0-8dd2-5b9bb94516a1/v2.0/.well-known/openid-configuration"
+AUTHENTICATION__OIDC_PROVIDERS__sso__CLIENT_ID="700bfc86-e26e-4638-a1a6-f7027106857b"
+```
+
+This example uses ORCID. The username will be the user's ORCID Id prepended with `orcid/`, e.g. `orcid/0000-0002-1825-0097`.
+Since `client_secret` is used, `AUTHENTICATION__OIDC_REDIRECT_URI` must also be set.
+```
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR="delegating"
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN="fe1be44a35eb00ab46f5"
+AUTHENTICATION__OIDC_REDIRECT_URI="https://scigateway.example.com/login"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__DISPLAY_NAME="Orcid"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__CONFIGURATION_URL="https://orcid.org/.well-known/openid-configuration"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__CLIENT_ID="APP-QKUS1G0MLIOXDC57"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__CLIENT_SECRET="33182ac684744367edd8"
+AUTHENTICATION__OIDC_PROVIDERS__orcid__MECHANISM="orcid"
+```
+
+This example uses Keycloak for testing with TLS certificate verification disabled. The username will be the user's email address (using custom settings for `SCOPE` and `USERNAME_CLAIM`).
+```
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR="delegating"
+AUTHENTICATION__OIDC_ICAT_AUTHENTICATOR_TOKEN="fe1be44a35eb00ab46f5"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__DISPLAY_NAME="Keycloak"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__CONFIGURATION_URL="https://localhost:9000/realms/test-realm/.well-known/openid-configuration"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__CLIENT_ID="test-client-id"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__VERIFY_CERT="False"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__SCOPE="openid email"
+AUTHENTICATION__OIDC_PROVIDERS__keycloak__USERNAME_CLAIM="email"
+```
 
 ### How to add or remove a JWT refresh token from the blacklist
 

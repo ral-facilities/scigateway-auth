@@ -8,7 +8,6 @@ import pytest
 
 from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import ICATServerError, InvalidCredentialsError
-from scigateway_auth.common.schemas import UserCredentialsPostRequestSchema
 from scigateway_auth.src.icat_client import ICATClient
 
 
@@ -21,7 +20,7 @@ class TestICATClient:
     password = "test-password"  # noqa: S105
     mnemonic = "test-mnemonic"
     session_id = "test-session-id"
-    credentials = UserCredentialsPostRequestSchema(username=username, password=password)
+    credentials = {"username": username, "password": password}
     user_instrument_ids = [1, 3, 5]
     user_investigation_ids = [2, 4, 6, 8, 10]
 

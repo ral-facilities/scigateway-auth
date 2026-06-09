@@ -7,6 +7,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from scigateway_auth.common.exceptions import (
     InvalidJWTError,
@@ -15,12 +16,7 @@ from scigateway_auth.common.exceptions import (
     MaintenanceFileWriteError,
     UserNotAdminError,
 )
-from scigateway_auth.common.schemas import (
-    MaintenancePutRequestSchema,
-    MaintenanceStateSchema,
-    ScheduledMaintenancePutRequestSchema,
-    ScheduledMaintenanceStateSchema,
-)
+from scigateway_auth.common.schemas import MaintenanceStateSchema, ScheduledMaintenanceStateSchema
 from scigateway_auth.src.jwt_handler import JWTHandler
 from scigateway_auth.src.maintenance import MaintenanceMode, ScheduledMaintenanceMode
 
@@ -68,12 +64,13 @@ def get_maintenance_state(maintenance_mode: MaintenanceModeDep) -> MaintenanceSt
 )
 def update_maintenance_state(
     maintenance_mode: MaintenanceModeDep,
-    maintenance: MaintenancePutRequestSchema,
+    maintenance: MaintenanceStateSchema,
+    bearer_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer(description="Access token"))],
 ) -> JSONResponse:
     logger.info("Updating maintenance state")
     try:
-        _verify_user_is_admin(maintenance.token)
-        maintenance_mode.update_maintenance_state(maintenance.maintenance)
+        _verify_user_is_admin(bearer_token.credentials)
+        maintenance_mode.update_maintenance_state(maintenance)
         return JSONResponse(status_code=status.HTTP_200_OK, content="Maintenance state successfully updated")
     except (InvalidJWTError, UserNotAdminError) as exc:
         message = "Unable to update maintenance state"
@@ -111,12 +108,13 @@ def get_scheduled_maintenance_state(
 )
 def update_scheduled_maintenance_state(
     scheduled_maintenance_mode: ScheduledMaintenanceModeDep,
-    scheduled_maintenance: ScheduledMaintenancePutRequestSchema,
+    scheduled_maintenance: ScheduledMaintenanceStateSchema,
+    bearer_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer(description="Access token"))],
 ) -> JSONResponse:
     logger.info("Updating scheduled maintenance state")
     try:
-        _verify_user_is_admin(scheduled_maintenance.token)
-        scheduled_maintenance_mode.update_maintenance_state(scheduled_maintenance.scheduled_maintenance)
+        _verify_user_is_admin(bearer_token.credentials)
+        scheduled_maintenance_mode.update_maintenance_state(scheduled_maintenance)
         return JSONResponse(status_code=status.HTTP_200_OK, content="Scheduled maintenance state successfully updated")
     except (InvalidJWTError, UserNotAdminError) as exc:
         message = "Unable to update scheduled maintenance state"
