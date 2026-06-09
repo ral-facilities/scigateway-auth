@@ -181,11 +181,18 @@ def oidc_login(
     try:
         icat_session_id = ICATClient.authenticate(config.authentication.oidc_icat_authenticator, credentials)
         icat_username = ICATClient.get_username(icat_session_id)
+        icat_user_instrument_ids = ICATClient.get_user_instrument_ids(icat_session_id, icat_username)
+        icat_user_investigation_ids = ICATClient.get_user_investigation_ids(icat_session_id, icat_username)
     except ICATServerError as exc:
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
 
-    access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+    access_token = jwt_handler.get_access_token(
+        icat_session_id,
+        icat_username,
+        icat_user_instrument_ids,
+        icat_user_investigation_ids,
+    )
     refresh_token = jwt_handler.get_refresh_token(icat_username)
 
     response = JSONResponse(content=access_token)
