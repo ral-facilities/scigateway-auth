@@ -9,4 +9,5 @@ import-order-style = google
 per-file-ignores =
     test/**.py:S101
     test/mock_data.py:S105
+    test/test_oidc.py:S105, S101
 enable-extensions=G
