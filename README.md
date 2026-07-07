@@ -136,7 +136,7 @@ documentation.
    ```bash
    poetry install
    ```
-   
+
 2. Start the application:
 
    ```bash

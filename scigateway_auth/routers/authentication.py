@@ -12,7 +12,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from scigateway_auth.common.config import config
 from scigateway_auth.common.exceptions import (
     BlacklistedJWTError,
-    ICATAuthenticationError,
+    ICATServerError,
+    InvalidCredentialsError,
     InvalidJWTError,
     JWTRefreshError,
     OidcProviderNotFoundError,
@@ -20,7 +21,7 @@ from scigateway_auth.common.exceptions import (
 )
 from scigateway_auth.common.schemas import LoginDetailsPostRequestSchema
 from scigateway_auth.src import oidc
-from scigateway_auth.src.authentication import ICATAuthenticator
+from scigateway_auth.src.icat_client import ICATClient
 from scigateway_auth.src.jwt_handler import JWTHandler
 
 logger = logging.getLogger()
@@ -38,7 +39,7 @@ JWTHandlerDep = Annotated[JWTHandler, Depends(JWTHandler)]
 def get_authenticators():
     logger.info("Getting a list of valid ICAT authenticators")
     try:
-        return ICATAuthenticator.get_authenticators()
+        return ICATClient.get_authenticators()
     except KeyError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -90,13 +91,25 @@ def login(
         }
 
     try:
-        icat_session_id = ICATAuthenticator.authenticate(login_details.mnemonic, credentials)
-        icat_username = ICATAuthenticator.get_username(icat_session_id)
-    except ICATAuthenticationError as exc:
-        logger.exception(exc.args)
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
+        icat_session_id = ICATClient.authenticate(login_details.mnemonic, credentials)
+        icat_username = ICATClient.get_username(icat_session_id)
+        icat_user_instrument_ids = ICATClient.get_user_instrument_ids(icat_session_id, icat_username)
+        icat_user_investigation_ids = ICATClient.get_user_investigation_ids(icat_session_id, icat_username)
+    except InvalidCredentialsError as exc:
+        message = "Invalid credentials provided"
+        logger.exception(message)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=message) from exc
+    except ICATServerError as exc:
+        message = "Something went wrong"
+        logger.exception(message)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=message) from exc
 
-    access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+    access_token = jwt_handler.get_access_token(
+        icat_session_id,
+        icat_username,
+        icat_user_instrument_ids,
+        icat_user_investigation_ids,
+    )
     refresh_token = jwt_handler.get_refresh_token(icat_username)
 
     response = JSONResponse(content=access_token)
@@ -166,13 +179,20 @@ def oidc_login(
     }
 
     try:
-        icat_session_id = ICATAuthenticator.authenticate(config.authentication.oidc_icat_authenticator, credentials)
-        icat_username = ICATAuthenticator.get_username(icat_session_id)
-    except ICATAuthenticationError as exc:
+        icat_session_id = ICATClient.authenticate(config.authentication.oidc_icat_authenticator, credentials)
+        icat_username = ICATClient.get_username(icat_session_id)
+        icat_user_instrument_ids = ICATClient.get_user_instrument_ids(icat_session_id, icat_username)
+        icat_user_investigation_ids = ICATClient.get_user_investigation_ids(icat_session_id, icat_username)
+    except ICATServerError as exc:
         logger.exception(exc.args)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
 
-    access_token = jwt_handler.get_access_token(icat_session_id, icat_username)
+    access_token = jwt_handler.get_access_token(
+        icat_session_id,
+        icat_username,
+        icat_user_instrument_ids,
+        icat_user_investigation_ids,
+    )
     refresh_token = jwt_handler.get_refresh_token(icat_username)
 
     response = JSONResponse(content=access_token)
