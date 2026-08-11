@@ -17,10 +17,11 @@ authors = [
 ]
 dependencies = [
     "requests (>=2.32,<3.0)",
-    "PyJWT (>=2.9,<3.0)",
+    "pyjwt (>=2.13.0,<3.0.0)",
     "cryptography (>=43.0)",
-    "fastapi[all] (>=0.123)",
+    "fastapi[all] (>=0.141.1,<0.142.0)",
     "cachetools (>=6.2)",
+    "httpx2 (>=2.10.0,<3.0.0)",
 ]
 
 [project.urls]
@@ -31,12 +32,12 @@ repository = "https://github.com/ral-facilities/scigateway-auth"
 requires-poetry = ">=2.0,<3.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
+pytest = "^9.1.1"
 coverage = "^7.6.4"
 pytest-cov = "^5.0.0"
 flake8 = "^7.1.1"
 flake8-bandit = "^4.1.1"
-flake8-black = "^0.3.6"
+flake8-black = "^0.4.0"
 flake8-broken-line = "^1.0.0"
 flake8-bugbear = "^24.8.19"
 flake8-builtins = "^2.5.0"
@@ -45,7 +46,7 @@ flake8-comprehensions = "^3.15.0"
 flake8-import-order = "^0.18.2"
 flake8-logging-format = "^1.0.0"
 pep8-naming = "^0.14.1"
-black = "^24.10.0"
+black = "^26.5.1"
 safety = "^3.2.10"
 pytest-env = "^1.1.5"
 
