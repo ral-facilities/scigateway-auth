@@ -28,12 +28,6 @@ def safety(session):
         "check",
         "--file=poetry.lock",
         "--full-report",
-        "--ignore",
-        "70612",
-        "--ignore",
-        "72731",
-        "--ignore",
-        "70624",
     )
 
 

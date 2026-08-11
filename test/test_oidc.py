@@ -14,7 +14,6 @@ from scigateway_auth.common.exceptions import InvalidJWTError, OidcProviderNotFo
 from scigateway_auth.src import oidc
 from test.mock_data import JWK_PRIVATE_KEY, JWK_PUBLIC
 
-
 MOCK_CONFIGURATION = {
     "issuer": "https://mock-oidc-provider/issuer",
     "jwks_uri": "https://mock-oidc-provider/issuer/keys",
