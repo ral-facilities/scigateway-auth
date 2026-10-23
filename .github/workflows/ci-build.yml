@@ -19,14 +19,11 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+    - name: Touch coverage.xml
+      run: touch coverage.xml
+
     - name: Run tests
-      run: |
-        docker build --file Dockerfile --target test --tag scigateway-auth:test .
-        docker run \
-         --name scigateway-auth \
-         scigateway-auth:test \
-         pytest --config-file test/pytest.ini --cov scigateway_auth --cov-report xml test/ -v
-        docker cp scigateway-auth:/app/coverage.xml coverage.xml
+      run: docker compose run tests
 
     - name: Upload code coverage report
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
@@ -38,19 +35,8 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.11'
-
-    - name: Install Nox
-      run: pip install nox==2024.10.9
-
-    - name: Install Poetry
-      run: pip install poetry~=2.0
-
-    - name: Run Nox lint session
-      run: nox -s lint
+    - name: Lint
+      run: docker compose run lint
 
   formatting:
     runs-on: ubuntu-latest
@@ -59,19 +45,8 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.11'
-
-    - name: Install Nox
-      run: pip install nox==2024.10.9
-
-    - name: Install Poetry
-      run: pip install poetry~=2.0
-
-    - name: Run Nox black session
-      run: nox -s black
+    - name: Format
+      run: docker compose run format
 
   safety:
     runs-on: ubuntu-latest
@@ -80,16 +55,8 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-      with:
-        python-version: '3.11'
-
-    - name: Install Nox
-      run: pip install nox==2024.10.9
-
-    - name: Run Nox safety session
-      run: nox -s safety
+    - name: Safety
+      run: docker compose run safety
 
   docker:
     needs: [tests, linting, formatting, safety]
