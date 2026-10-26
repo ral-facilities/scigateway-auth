@@ -1,4 +1,4 @@
-FROM python:3.11.10-alpine3.20@sha256:f089154eb2546de825151b9340a60d39e2ba986ab17aaffca14301b0b961a11c as base
+FROM python:3.13-alpine3.24@sha256:bf12ecc0bea3f171d55145dd02c78b5eeb09f30ee2ac9cc2b4c9e4e8f5e30741 AS base
 
 WORKDIR /app
 
@@ -7,17 +7,18 @@ COPY poetry.lock pyproject.toml ./
 RUN --mount=type=cache,target=/root/.cache \
     set -eux; \
     \
-    pip install --no-cache-dir 'poetry~=2.0' poetry-plugin-export; \
+    pip install --no-cache-dir 'poetry==2.5.1' poetry-plugin-export; \
     \
     poetry export --only dev --format requirements.txt --without-hashes --output requirements-dev.txt; \
     poetry export --without dev --format requirements.txt --without-hashes --output requirements-prod.txt;
 
 
-FROM python:3.11.10-alpine3.20@sha256:f089154eb2546de825151b9340a60d39e2ba986ab17aaffca14301b0b961a11c as dev
+FROM python:3.13-alpine3.24@sha256:bf12ecc0bea3f171d55145dd02c78b5eeb09f30ee2ac9cc2b4c9e4e8f5e30741 AS dev
 
 WORKDIR /app
 
 COPY --from=base /app/requirements-*.txt ./
+COPY poetry.lock pyproject.toml .flake8 ./
 COPY scigateway_auth/ scigateway_auth/
 COPY maintenance/ maintenance/
 
@@ -42,7 +43,7 @@ COPY test/ test/
 CMD ["pytest",  "--config-file", "test/pytest.ini", "--cov", "scigateway_auth", "--cov-report", "term-missing", "-v"]
 
 
-FROM python:3.11.10-alpine3.20@sha256:f089154eb2546de825151b9340a60d39e2ba986ab17aaffca14301b0b961a11c as prod
+FROM python:3.13-alpine3.24@sha256:bf12ecc0bea3f171d55145dd02c78b5eeb09f30ee2ac9cc2b4c9e4e8f5e30741 AS prod
 
 WORKDIR /app
 
