@@ -1,4 +1,52 @@
 services:
+  format:
+    build:
+      context: .
+      target: test
+    volumes:
+      - type: bind
+        source: ./scigateway_auth
+        target: /app/scigateway_auth
+      - type: bind
+        source: ./test
+        target: /app/test
+    command: black scigateway_auth test
+
+  lint:
+    build:
+      context: .
+      target: test
+    volumes:
+      - type: bind
+        source: ./scigateway_auth
+        target: /app/scigateway_auth
+      - type: bind
+        source: ./test
+        target: /app/test
+    command: flake8 scigateway_auth test
+
+  safety:
+    build:
+      context: .
+      target: test
+    command: safety check --file=poetry.lock --full-report
+
+  tests:
+    build:
+      context: .
+      target: test
+    volumes:
+      - type: bind
+        source: ./scigateway_auth
+        target: /app/scigateway_auth
+      - type: bind
+        source: ./test
+        target: /app/test
+      - type: bind
+        source: ./coverage.xml
+        target: /app/coverage.xml
+
+
   scigateway-auth:
     container_name: scigateway-auth
     build:

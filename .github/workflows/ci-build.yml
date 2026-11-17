@@ -17,79 +17,46 @@ jobs:
     name: Unit Tests
     steps:
     - name: Checkout repo
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Touch coverage.xml
+      run: touch coverage.xml
 
     - name: Run tests
-      run: |
-        docker build --file Dockerfile --target test --tag scigateway-auth:test .
-        docker run \
-         --name scigateway-auth \
-         scigateway-auth:test \
-         pytest --config-file test/pytest.ini --cov scigateway_auth --cov-report xml test/ -v
-        docker cp scigateway-auth:/app/coverage.xml coverage.xml
+      run: docker compose run tests
 
     - name: Upload code coverage report
-      uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
 
   linting:
     runs-on: ubuntu-latest
     name: Linting
     steps:
     - name: Checkout repo
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
-      with:
-        python-version: '3.11'
-
-    - name: Install Nox
-      run: pip install nox==2024.10.9
-
-    - name: Install Poetry
-      run: pip install poetry~=2.0
-
-    - name: Run Nox lint session
-      run: nox -s lint
+    - name: Lint
+      run: docker compose run lint
 
   formatting:
     runs-on: ubuntu-latest
     name: Code Formatting
     steps:
     - name: Checkout repo
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
-      with:
-        python-version: '3.11'
-
-    - name: Install Nox
-      run: pip install nox==2024.10.9
-
-    - name: Install Poetry
-      run: pip install poetry~=2.0
-
-    - name: Run Nox black session
-      run: nox -s black
+    - name: Format
+      run: docker compose run format
 
   safety:
     runs-on: ubuntu-latest
     name: Dependency Safety
     steps:
     - name: Checkout repo
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-    - name: Setup Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
-      with:
-        python-version: '3.11'
-
-    - name: Install Nox
-      run: pip install nox==2024.10.9
-
-    - name: Run Nox safety session
-      run: nox -s safety
+    - name: Safety
+      run: docker compose run safety
 
   docker:
     needs: [tests, linting, formatting, safety]
@@ -99,10 +66,10 @@ jobs:
       PUSH_DOCKER_IMAGE_TO_HARBOR: ${{ inputs.push-docker-image-to-harbor != null && inputs.push-docker-image-to-harbor || 'false' }}
     steps:
     - name: Check out repo
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v3.5.2
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v3.5.2
 
     - name: Login to Harbor
-      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
       with:
         registry: harbor.stfc.ac.uk/datagateway
         username: ${{ secrets.HARBOR_USERNAME }}
@@ -110,12 +77,12 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+      uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
       with:
         images: harbor.stfc.ac.uk/datagateway/scigateway-auth
 
     - name: ${{ fromJSON(env.PUSH_DOCKER_IMAGE_TO_HARBOR) && 'Build and push Docker image to Harbor' || 'Build Docker image' }}
-      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
       with:
         context: .
         push: ${{ fromJSON(env.PUSH_DOCKER_IMAGE_TO_HARBOR) }}
