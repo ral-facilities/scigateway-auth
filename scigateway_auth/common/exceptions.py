@@ -9,9 +9,15 @@ class BlacklistedJWTError(Exception):
     """
 
 
-class ICATAuthenticationError(Exception):
+class ICATServerError(Exception):
     """
-    Exception raised when there are ICAT authentication related errors/issues.
+    Exception raised when there is a problem with the ICAT server.
+    """
+
+
+class InvalidCredentialsError(Exception):
+    """
+    Exception raised when invalid credentials are provided.
     """
 
 
