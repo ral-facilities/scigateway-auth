@@ -119,7 +119,7 @@ class ICATClient:
         # The username here comes directly from ICAT rather than a user's input. The ICAT server also defends against
         # SQL injections.
         query = (
-            "SELECT i.id FROM Instrument i JOIN i.instrumentScientists as isc JOIN isc.user u "  # noqa: S608
+            "SELECT DISTINCT i.id FROM Instrument i JOIN i.instrumentScientists as isc JOIN isc.user u "  # noqa: S608
             f"WHERE u.name = {username!r}"
         )
         return ICATClient._fetch_ids_by_query(session_id, query)
@@ -135,7 +135,7 @@ class ICATClient:
         # The username here comes directly from ICAT rather than a user's input. The ICAT server also defends against
         # SQL injections.
         query = (
-            "SELECT i.id FROM Investigation i JOIN i.investigationUsers as iu JOIN iu.user u "  # noqa: S608
+            "SELECT DISTINCT i.id FROM Investigation i JOIN i.investigationUsers as iu JOIN iu.user u "  # noqa: S608
             f"WHERE u.name = {username!r}"
         )
         return ICATClient._fetch_ids_by_query(session_id, query)
