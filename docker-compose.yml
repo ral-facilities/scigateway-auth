@@ -29,7 +29,7 @@ services:
     build:
       context: .
       target: test
-    command: safety check --file=poetry.lock --full-report
+    command: safety check --file=requirements-prod.txt --full-report
 
   tests:
     build:
