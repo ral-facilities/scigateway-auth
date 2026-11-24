@@ -48,7 +48,7 @@ pep8-naming = "^0.14.1"
 black = "^26.10.1"
 safety = "^3.8.1"
 pytest-env = "^1.1.5"
-authlib = ">=1.7.0,<1.8.0"
+authlib = ">=1.9.1,<1.10.0"
 
 [build-system]
 requires = ["poetry-core>=2.0,<3.0"]
