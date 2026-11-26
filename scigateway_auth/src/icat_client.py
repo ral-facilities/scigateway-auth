@@ -120,7 +120,7 @@ class ICATClient:
         # SQL injections.
         query = (
             "SELECT DISTINCT i.id FROM Instrument i JOIN i.instrumentScientists as isc JOIN isc.user u "  # noqa: S608
-            f"WHERE u.name = {username!r}"
+            f"WHERE u.name = '{username}'"
         )
         return ICATClient._fetch_ids_by_query(session_id, query)
 
@@ -136,7 +136,7 @@ class ICATClient:
         # SQL injections.
         query = (
             "SELECT DISTINCT i.id FROM Investigation i JOIN i.investigationUsers as iu JOIN iu.user u "  # noqa: S608
-            f"WHERE u.name = {username!r}"
+            f"WHERE u.name = '{username}'"
         )
         return ICATClient._fetch_ids_by_query(session_id, query)
 
